@@ -801,6 +801,7 @@
         <div class="stitle" id="mT"></div>
         <button class="xbtn" onclick="closeS()">✕</button>
       </div>
+      <div id="mID" style="padding: 0 20px 12px; font-size: 14px; color: var(--sub); font-weight: 600;"></div>
       <div class="sbody" id="sbody">
         <div class="gwrap" id="gw">
           <div class="gtrack" id="gt"></div>
@@ -1069,10 +1070,10 @@
       const p = DATA.find(x => String(x.id) === String(id));
       if (!p) return;
       document.getElementById('mT').textContent = p.t;
+      document.getElementById('mID').textContent = `Mã số: ${p.id}`;
       // Load ảnh lớn w1200 cho album chi tiết
       buildG(p.imgs.map(url => fixImgUrl(url, 'w1200')));
       document.getElementById('mG').innerHTML = `
-    <div style="grid-column: span 2; font-size: 13px; color: var(--sub); margin-bottom: 10px; font-weight: 600;">Mã: ${p.id}</div>
     <div class="ib"><div class="il">Giá bán</div><div class="iv hi">${p.gia} tỷ</div></div>
     <div class="ib"><div class="il">Diện tích</div><div class="iv">${p.dt} m²</div></div>
     <div class="ib"><div class="il">Đơn giá</div><div class="iv" style="color:var(--gold);font-weight:800">${p.giabq}</div></div>
