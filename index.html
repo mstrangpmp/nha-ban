@@ -814,7 +814,7 @@
       </div>
       <div class="scta">
         <a href="tel:0979841573" class="cb ccall" id="mCall">📞 Gọi ngay</a>
-        <button class="cb czalo" id="mZalo" onclick="">💬 Hỏi về căn này</button>
+        <button class="cb czalo" id="mZalo" onclick="">💬 Tư vấn ngay căn này</button>
       </div>
     </div>
   </div>
@@ -1090,7 +1090,7 @@
       
       // Cấu hình nút hỏi Zalo
       const btnZalo = document.getElementById('mZalo');
-      btnZalo.textContent = `💬 Hỏi về mã #${p.id}`;
+      btnZalo.textContent = `💬 Tư vấn ngay căn này`;
       btnZalo.onclick = () => askZalo(p.id, p.t);
       
       document.getElementById('ov').classList.add('open');
