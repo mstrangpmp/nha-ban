@@ -24,6 +24,29 @@
       --safe-bot: env(safe-area-inset-bottom, 0px);
     }
 
+    /* Admin UI */
+    .admin-only { display: none; }
+    body.is-admin .admin-only { display: block; }
+    .share-btn-float {
+      position: fixed; bottom: 85px; right: 20px;
+      background: var(--gold); color: #fff;
+      width: 60px; height: 60px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 100;
+      border: none; cursor: pointer; font-size: 24px;
+    }
+    .card-sel {
+      position: absolute; top: 10px; right: 10px;
+      width: 24px; height: 24px; z-index: 5;
+      accent-color: var(--gold); transform: scale(1.3);
+    }
+    .share-count {
+      position: absolute; top: -5px; right: -5px;
+      background: var(--red); color: #fff;
+      font-size: 10px; padding: 2px 6px; border-radius: 10px;
+      font-weight: 800; border: 2px solid #fff;
+    }
+
     *,
     *::before,
     *::after {
@@ -754,6 +777,15 @@
 
     let DATA = [];
     let curFilter = 'all';
+    const SELECTED_IDS = new Set();
+
+    // Cấu hình bảo mật đơn giản
+    const ADMIN_PASSWORD = 'trang'; // Bạn có thể đổi chữ 'trang' này
+    const urlParams = new URLSearchParams(window.location.search);
+    const isAdmin = urlParams.get('pwd') === ADMIN_PASSWORD;
+    const shareToken = urlParams.get('s');
+
+    if (isAdmin) document.body.classList.add('is-admin');
 
     // Lấy giá trị ô từ Google Sheets JSON (xử lý null)
     function cv(cell) { return cell ? (cell.v ?? '') : ''; }
@@ -812,6 +844,22 @@
                 imgs: [cv(r.c[14]), cv(r.c[15]), cv(r.c[16]), cv(r.c[17])].map(fixImgUrl).filter(Boolean) // O,P,Q,R
               };
             });
+
+          // Lọc dữ liệu nếu là khách được chia sẻ link
+          if (shareToken) {
+            try {
+              const allowedIds = JSON.parse(atob(shareToken)); // Giải mã Base64
+              DATA = DATA.filter(p => allowedIds.includes(String(p.id)));
+            } catch(e) {
+              DATA = [];
+              showError('Đường link không hợp lệ hoặc đã hết hạn.');
+            }
+          } else if (!isAdmin) {
+            // Nếu không phải admin và không có link share -> Không cho xem gì hoặc chỉ cho xem 1-2 căn mẫu
+            DATA = []; 
+            showError('Vui lòng truy cập bằng đường link do Admin cung cấp.');
+          }
+
           updateStats();
           render(curFilter);
         } catch (e) {
@@ -875,6 +923,7 @@
         c.className = 'card';
         c.style.animationDelay = (i * .04) + 's';
         c.innerHTML = `
+      ${isAdmin ? `<input type="checkbox" class="card-sel" onchange="toggleSelect('${p.id}', this)" ${SELECTED_IDS.has(String(p.id)) ? 'checked' : ''}>` : ''}
       <div class="crow" onclick="openS('${p.id}')">
         <div class="ibox">
           <img src="${thumb}" alt="${p.t}" loading="lazy">
@@ -968,6 +1017,39 @@
     }
     function closeS() { document.getElementById('ov').classList.remove('open'); document.body.style.overflow = ''; }
     function bgC(e) { if (e.target === document.getElementById('ov')) closeS(); }
+
+    // Admin Tools
+    function toggleSelect(id, el) {
+      if (el.checked) SELECTED_IDS.add(String(id));
+      else SELECTED_IDS.delete(String(id));
+      document.getElementById('shareCount').textContent = SELECTED_IDS.size;
+    }
+
+    function generateShareLink() {
+      if (SELECTED_IDS.size === 0) {
+        alert('Vui lòng chọn ít nhất 1 căn nhà!');
+        return;
+      }
+      const ids = Array.from(SELECTED_IDS);
+      const token = btoa(JSON.stringify(ids)); // Mã hóa danh sách ID
+      const baseUrl = window.location.origin + window.location.pathname;
+      const shareUrl = `${baseUrl}?s=${token}`;
+      
+      // Copy vào clipboard
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert('Đã tạo và copy link gửi khách thành công!\n\nKhách sẽ chỉ xem được ' + ids.length + ' căn bạn đã chọn.');
+      });
+    }
+
+    // Thêm nút tạo link nếu là admin
+    if (isAdmin) {
+      document.body.insertAdjacentHTML('beforeend', `
+        <button class="share-btn-float" onclick="generateShareLink()">
+          🔗
+          <span class="share-count" id="shareCount">0</span>
+        </button>
+      `);
+    }
 
     // Khởi động
     loadData();
