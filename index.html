@@ -345,6 +345,19 @@
       border-radius: 6px
     }
 
+    .mid {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      z-index: 4;
+    }
+
     .info {
       flex: 1;
       padding: 10px 12px 10px 10px;
@@ -972,8 +985,10 @@
           <img src="${thumb}" alt="${p.t}" loading="lazy" onload="this.parentElement.classList.add('is-loaded'); this.classList.add('loaded');">
           <span class="lg">Giảm chào</span>
           <span class="lc">Chuẩn</span>
+          <span class="mid">ID: ${p.id}</span>
         </div>
         <div class="info">
+          <div style="font-size: 10px; color: var(--sub); font-weight: 600; margin-bottom: 2px;">MÃ: ${p.id}</div>
           <div class="ititle">${p.t}</div>
           <div class="chips">
             <span class="chip">📐 ${p.dt}m²</span>
