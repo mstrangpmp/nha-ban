@@ -24,15 +24,18 @@
       --safe-bot: env(safe-area-inset-bottom, 0px);
     }
 
-    /* Admin UI */
+    /* Mặc định ẩn Filter & Stats (Sẽ hiện ra nếu là Admin) */
+    .tabs, .stats { display: none !important; }
+    
+    /* Chỉ hiện khi body có class .is-admin */
+    body.is-admin .tabs { display: flex !important; }
+    body.is-admin .stats { display: flex !important; }
+    
+    body:not(.is-admin) header { padding-bottom: 14px; }
+
     .admin-only { display: none; }
     body.is-admin .admin-only { display: block; }
     
-    /* Ẩn Filter & Stats đối với khách */
-    body:not(.is-admin) .tabs, 
-    body:not(.is-admin) .stats { display: none; }
-    body:not(.is-admin) header { padding-bottom: 14px; } /* Căn chỉnh lại header khi mất tabs */
-
     .share-btn-float {
       position: fixed; bottom: 85px; right: 20px;
       background: var(--gold); color: #fff;
@@ -770,10 +773,18 @@
 
   <script>
     // ============================================================
-    //  ⚙️  CẤU HÌNH — CHỈ CẦN SỬA 2 DÒNG NÀY
+    //  ⚙️  KIỂM TRA QUYỀN TRUY CẬP (Chạy ngay lập tức)
     // ============================================================
-    const SHEET_ID = '1klR5iKt_gxempDi9dguJMS8PGEe2YjqRHrMREzwnXc0';  // ← bước 3
-    const SDT = '0979841573';                         // ← số điện thoại thật
+    const ADMIN_PASSWORD = 'trang'; 
+    const urlParams = new URLSearchParams(window.location.search);
+    const isAdmin = urlParams.get('pwd') === ADMIN_PASSWORD;
+    const shareToken = urlParams.get('s');
+    if (isAdmin) document.body.classList.add('is-admin');
+    // ============================================================
+
+    //  ⚙️  CẤU HÌNH 
+    const SHEET_ID = '1klR5iKt_gxempDi9dguJMS8PGEe2YjqRHrMREzwnXc0'; 
+    const SDT = '0979841573';
     // ============================================================
 
     // Cập nhật số điện thoại tự động
@@ -784,14 +795,6 @@
     let DATA = [];
     let curFilter = 'all';
     const SELECTED_IDS = new Set();
-
-    // Cấu hình bảo mật đơn giản
-    const ADMIN_PASSWORD = 'trang'; // Bạn có thể đổi chữ 'trang' này
-    const urlParams = new URLSearchParams(window.location.search);
-    const isAdmin = urlParams.get('pwd') === ADMIN_PASSWORD;
-    const shareToken = urlParams.get('s');
-
-    if (isAdmin) document.body.classList.add('is-admin');
 
     // Lấy giá trị ô từ Google Sheets JSON (xử lý null)
     function cv(cell) { return cell ? (cell.v ?? '') : ''; }
