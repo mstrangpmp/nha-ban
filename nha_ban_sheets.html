@@ -27,6 +27,12 @@
     /* Admin UI */
     .admin-only { display: none; }
     body.is-admin .admin-only { display: block; }
+    
+    /* Ẩn Filter & Stats đối với khách */
+    body:not(.is-admin) .tabs, 
+    body:not(.is-admin) .stats { display: none; }
+    body:not(.is-admin) header { padding-bottom: 14px; } /* Căn chỉnh lại header khi mất tabs */
+
     .share-btn-float {
       position: fixed; bottom: 85px; right: 20px;
       background: var(--gold); color: #fff;
@@ -855,9 +861,9 @@
               showError('Đường link không hợp lệ hoặc đã hết hạn.');
             }
           } else if (!isAdmin) {
-            // Nếu không phải admin và không có link share -> Không cho xem gì hoặc chỉ cho xem 1-2 căn mẫu
+            // Nếu không phải admin và không có link share
             DATA = []; 
-            showError('Vui lòng truy cập bằng đường link do Admin cung cấp.');
+            showError('Vui lòng liên hệ Khang Ngô Nhà Phố để được cung cấp thông tin.');
           }
 
           updateStats();
@@ -881,11 +887,8 @@
       if (lbl) list.appendChild(lbl);
       list.insertAdjacentHTML('beforeend', `
     <div class="err-box">
-      <h3>⚠️ Không tải được dữ liệu</h3>
-      <p>Vui lòng kiểm tra:<br>
-      1. SHEET_ID đã đúng chưa<br>
-      2. Sheet đã set "Anyone with link can view"<br><br>
-      Chi tiết: ${msg}</p>
+      <h3>🏠 Thông báo</h3>
+      <p style="font-size: 15px; font-weight: 500;">Vui lòng liên hệ <b>Khang Ngô Nhà Phố</b> để được cung cấp thông tin.</p>
     </div>`);
     }
 
@@ -913,7 +916,7 @@
       const arr = f === 'all' ? DATA : DATA.filter(p => p.q === f);
 
       if (!arr.length) {
-        list.insertAdjacentHTML('beforeend', '<div style="text-align:center;padding:40px;color:var(--sub)">Không có căn nào trong khu vực này</div>');
+        list.insertAdjacentHTML('beforeend', '<div style="text-align:center;padding:60px 20px;color:var(--sub);font-weight:500;">Vui lòng liên hệ Khang Ngô Nhà Phố để được cung cấp thông tin.</div>');
         return;
       }
 
