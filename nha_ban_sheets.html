@@ -796,7 +796,7 @@
               tang: cv(r.c[3]),
               mat:  cv(r.c[4]),
               gia:  cv(r.c[5]),
-              q:    cv(r.c[6]).trim().toLowerCase(),
+              q:    String(cv(r.c[6])).trim().toLowerCase(),
               ql:   cv(r.c[7]),
               m:    cv(r.c[8]),
               imgs: [cv(r.c[9]), cv(r.c[10]), cv(r.c[11]), cv(r.c[12])].map(fixImgUrl).filter(Boolean)
