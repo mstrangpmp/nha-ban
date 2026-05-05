@@ -801,7 +801,7 @@
         <div class="stitle" id="mT"></div>
         <button class="xbtn" onclick="closeS()">✕</button>
       </div>
-      <div id="mID" style="padding: 0 20px 12px; font-size: 14px; color: var(--sub); font-weight: 600;"></div>
+      <div id="mID" style="padding: 0 20px 4px; font-size: 13px; color: var(--sub); font-weight: 600; text-align: right;"></div>
       <div class="sbody" id="sbody">
         <div class="gwrap" id="gw">
           <div class="gtrack" id="gt"></div>
@@ -1070,7 +1070,7 @@
       const p = DATA.find(x => String(x.id) === String(id));
       if (!p) return;
       document.getElementById('mT').textContent = p.t;
-      document.getElementById('mID').textContent = `Mã số: ${p.id}`;
+      document.getElementById('mID').textContent = `#${p.id}`;
       // Load ảnh lớn w1200 cho album chi tiết
       buildG(p.imgs.map(url => fixImgUrl(url, 'w1200')));
       document.getElementById('mG').innerHTML = `
