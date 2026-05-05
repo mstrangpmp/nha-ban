@@ -345,27 +345,19 @@
       border-radius: 6px
     }
 
-    .mid {
-      position: absolute;
-      top: 0;
-      left: 0;
-      background: var(--gold);
-      color: #fff;
-      font-size: 13px; /* Tăng kích thước */
-      font-weight: 900;
-      padding: 4px 12px;
-      border-radius: 0 0 12px 0;
-      z-index: 4;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-    }
-
     .info {
       flex: 1;
       padding: 10px 12px 10px 10px;
       display: flex;
       flex-direction: column;
-      gap: 5px;
-      min-width: 0
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .mid-sub {
+      font-size: 10px;
+      color: var(--sub);
+      opacity: 0.7;
     }
 
     .ititle {
@@ -987,10 +979,8 @@
       <div class="crow" onclick="openS('${p.id}')">
         <div class="ibox">
           <img src="${thumb}" alt="${p.t}" loading="lazy" onload="this.parentElement.classList.add('is-loaded'); this.classList.add('loaded');">
-          <span class="mid">${p.id}</span>
         </div>
         <div class="info">
-          <div style="font-size: 14px; color: var(--gold); font-weight: 900; margin-bottom: 2px;">${p.id}</div>
           <div class="ititle">${p.t}</div>
           <div class="chips">
             <span class="chip">📐 ${p.dt}m²</span>
@@ -998,9 +988,12 @@
             <span class="chip">📏 ${p.mat}</span>
           </div>
           <div class="pr"><span class="pv">${p.gia} tỷ</span><span class="pu">VND</span></div>
-          <div class="loc">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-            ${p.ql}
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+            <div class="loc">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+              ${p.ql}
+            </div>
+            <div class="mid-sub">#${p.id}</div>
           </div>
         </div>
       </div>
@@ -1078,7 +1071,6 @@
       // Load ảnh lớn w1200 cho album chi tiết
       buildG(p.imgs.map(url => fixImgUrl(url, 'w1200')));
       document.getElementById('mG').innerHTML = `
-    <div class="ib"><div class="il">Mã số</div><div class="iv" style="color:var(--gold); font-weight:900; font-size: 18px;">${p.id}</div></div>
     <div class="ib"><div class="il">Giá bán</div><div class="iv hi">${p.gia} tỷ</div></div>
     <div class="ib"><div class="il">Diện tích</div><div class="iv">${p.dt} m²</div></div>
     <div class="ib"><div class="il">Đơn giá</div><div class="iv" style="color:var(--gold);font-weight:800">${p.giabq}</div></div>
@@ -1089,7 +1081,10 @@
     <div class="ib"><div class="il">Số tầng</div><div class="iv">${p.tang}</div></div>
     <div class="ib"><div class="il">Mặt tiền</div><div class="iv">${p.mat}</div></div>
     <div class="ib"><div class="il">Hướng</div><div class="iv">${p.huong}</div></div>
-    <div class="ib"><div class="il" style="grid-column: span 2">Tình trạng</div><div class="iv" style="grid-column: span 2">${p.tinh_trang}</div></div>`;
+    <div class="ib"><div class="il">Tình trạng</div><div class="iv">${p.tinh_trang}</div></div>
+    <div class="ib" style="opacity:0.5; margin-top:10px; border-top:1px dashed var(--border); padding-top:10px;">
+      <div class="il">Mã hệ thống</div><div class="iv">${p.id}</div>
+    </div>`;
       document.getElementById('mD').textContent = p.m;
       document.getElementById('ov').classList.add('open');
       document.getElementById('sbody').scrollTop = 0;
