@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#c0392b">
+  <title>Nhà Cần Bán HXH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ======= PASTE SHEET ID CỦA BẠN VÀO ĐÂY (xem hướng dẫn bên dưới) ======= */
+    :root {
+      --red: #c0392b;
+      --gold: #e0a800;
+      --blue: #0068ff;
+      --bg: #f2f2f7;
+      --card: #fff;
+      --border: #e5e5ea;
+      --text: #1c1c1e;
+      --sub: #6d6d72;
+      --chip: #f2f2f7;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bot: env(safe-area-inset-bottom, 0px);
+    }
+
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    body {
+      font-family: 'Be Vietnam Pro', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior: none
+    }
+
+    header {
+      background: var(--red);
+      padding: calc(var(--safe-top) + 14px) 16px 0;
+      position: sticky;
+      top: 0;
+      z-index: 90
+    }
+
+    .hdr-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px
+    }
+
+    .hdr-top h1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.3px
+    }
+
+    .badge {
+      background: var(--gold);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 0 0 12px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch
+    }
+
+    .tabs::-webkit-scrollbar {
+      display: none
+    }
+
+    .tab {
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, .18);
+      color: rgba(255, 255, 255, .9);
+      border: 1.5px solid rgba(255, 255, 255, .3);
+      border-radius: 20px;
+      padding: 7px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      min-height: 36px;
+      display: flex;
+      align-items: center;
+      font-family: inherit
+    }
+
+    .tab.on {
+      background: #fff;
+      color: var(--red);
+      border-color: #fff
+    }
+
+    .stats {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      overflow-x: auto;
+      scrollbar-width: none
+    }
+
+    .stats::-webkit-scrollbar {
+      display: none
+    }
+
+    .stat {
+      flex: 1;
+      min-width: 60px;
+      padding: 10px 6px;
+      text-align: center;
+      border-right: 1px solid var(--border)
+    }
+
+    .stat:last-child {
+      border-right: none
+    }
+
+    .sn {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--red);
+      line-height: 1.1
+    }
+
+    .sl {
+      font-size: 10px;
+      color: var(--sub);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      margin-top: 2px
+    }
+
+    main {
+      padding: 10px 12px calc(72px + var(--safe-bot));
+      max-width: 540px;
+      margin: 0 auto
+    }
+
+    .sec-lbl {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--sub);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 8px 2px
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 48px 16px;
+      color: var(--sub)
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--red);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 0 auto 12px
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    .err-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      border: 1px solid var(--border);
+      margin: 8px 0
+    }
+
+    .err-box h3 {
+      color: var(--red);
+      margin-bottom: 8px;
+      font-size: 15px
+    }
+
+    .err-box p {
+      color: var(--sub);
+      font-size: 13px;
+      line-height: 1.6
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .08), 0 4px 16px rgba(0, 0, 0, .05);
+      border: 1px solid var(--border);
+      animation: up .35s both
+    }
+
+    @keyframes up {
+      from {
+        opacity: 0;
+        transform: translateY(12px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .crow {
+      display: flex;
+      align-items: stretch;
+      min-height: 110px
+    }
+
+    .ibox {
+      position: relative;
+      width: 115px;
+      min-width: 115px;
+      overflow: hidden;
+      border-radius: 16px 0 0 0
+    }
+
+    .ibox img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block
+    }
+
+    .lg {
+      position: absolute;
+      top: 7px;
+      left: 0;
+      background: var(--red);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px 3px 6px;
+      border-radius: 0 8px 8px 0
+    }
+
+    .lc {
+      position: absolute;
+      bottom: 7px;
+      left: 7px;
+      background: #1565c0;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px
+    }
+
+    .info {
+      flex: 1;
+      padding: 10px 12px 10px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 0
+    }
+
+    .ititle {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--red);
+      line-height: 1.35;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px
+    }
+
+    .chip {
+      background: var(--chip);
+      border-radius: 6px;
+      padding: 2px 7px;
+      font-size: 11px;
+      color: #444;
+      font-weight: 500;
+      white-space: nowrap
+    }
+
+    .pr {
+      display: flex;
+      align-items: baseline;
+      gap: 4px
+    }
+
+    .pv {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--red)
+    }
+
+    .pu {
+      font-size: 12px;
+      color: var(--sub)
+    }
+
+    .loc {
+      font-size: 11.5px;
+      color: var(--sub);
+      display: flex;
+      align-items: center;
+      gap: 3px
+    }
+
+    .cfoot {
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 12px
+    }
+
+    .bsee {
+      background: none;
+      border: 1.5px solid var(--red);
+      color: var(--red);
+      border-radius: 20px;
+      padding: 7px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      min-height: 44px;
+      font-family: inherit
+    }
+
+    .bsee:active {
+      background: var(--red);
+      color: #fff
+    }
+
+    .heart {
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: #ccc;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .heart.on {
+      color: var(--red)
+    }
+
+    .sfoot {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      padding: 10px 16px calc(10px + var(--safe-bot));
+      display: flex;
+      gap: 10px;
+      z-index: 80
+    }
+
+    .fb {
+      flex: 1;
+      border: none;
+      border-radius: 12px;
+      padding: 13px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+      min-height: 50px
+    }
+
+    .fcall {
+      background: var(--red);
+      color: #fff
+    }
+
+    .fzalo {
+      background: var(--blue);
+      color: #fff
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .55);
+      z-index: 200;
+      align-items: flex-end;
+      justify-content: center
+    }
+
+    .overlay.open {
+      display: flex
+    }
+
+    .sheet {
+      background: #fff;
+      width: 100%;
+      max-width: 540px;
+      max-height: 93dvh;
+      border-radius: 20px 20px 0 0;
+      display: flex;
+      flex-direction: column;
+      animation: su .3s cubic-bezier(.22, 1, .36, 1);
+      overflow: hidden
+    }
+
+    @keyframes su {
+      from {
+        transform: translateY(100%)
+      }
+
+      to {
+        transform: translateY(0)
+      }
+    }
+
+    .dh {
+      width: 36px;
+      height: 4px;
+      background: #ddd;
+      border-radius: 2px;
+      margin: 10px auto 0;
+      flex-shrink: 0
+    }
+
+    .shead {
+      padding: 10px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px
+    }
+
+    .stitle {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--red);
+      line-height: 1.4
+    }
+
+    .xbtn {
+      background: var(--chip);
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #555;
+      flex-shrink: 0;
+      min-width: 44px;
+      min-height: 44px;
+      font-family: inherit
+    }
+
+    .sbody {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      flex: 1;
+      padding: 14px 14px 8px
+    }
+
+    .gwrap {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #eee;
+      margin-bottom: 12px;
+      touch-action: pan-y
+    }
+
+    .gtrack {
+      display: flex;
+      transition: transform .28s cubic-bezier(.25, .46, .45, .94)
+    }
+
+    .gslide {
+      flex-shrink: 0;
+      width: 100%
+    }
+
+    .gslide img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      display: block
+    }
+
+    .gdots {
+      position: absolute;
+      bottom: 8px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+      pointer-events: none
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .55);
+      transition: background .2s, width .2s
+    }
+
+    .dot.on {
+      background: #fff;
+      width: 16px;
+      border-radius: 3px
+    }
+
+    .garr {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, .35);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      min-width: 44px;
+      min-height: 44px
+    }
+
+    .al {
+      left: 4px
+    }
+
+    .ar {
+      right: 4px
+    }
+
+    .ig {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px
+    }
+
+    .ib {
+      background: var(--chip);
+      border-radius: 12px;
+      padding: 10px 8px;
+      text-align: center
+    }
+
+    .il {
+      font-size: 10px;
+      color: var(--sub);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      margin-bottom: 4px
+    }
+
+    .iv {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text)
+    }
+
+    .iv.hi {
+      color: var(--red);
+      font-size: 16px
+    }
+
+    .desc {
+      background: #fffbf2;
+      border-left: 3px solid var(--gold);
+      border-radius: 0 10px 10px 0;
+      padding: 12px;
+      font-size: 13.5px;
+      line-height: 1.75;
+      color: #444;
+      margin-bottom: 6px
+    }
+
+    .scta {
+      padding: 10px 14px calc(10px + var(--safe-bot));
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      background: #fff
+    }
+
+    .cb {
+      flex: 1;
+      border: none;
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 50px;
+      text-decoration: none
+    }
+
+    .ccall {
+      background: var(--red);
+      color: #fff
+    }
+
+    .czalo {
+      background: var(--blue);
+      color: #fff
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="hdr-top">
+      <h1>🏠 Nhà Cần Bán</h1>
+      <span class="badge" id="totalBadge">Đang tải...</span>
+    </div>
+    <div class="tabs">
+      <button class="tab on" onclick="setF('all',this)">Tất cả</button>
+      <button class="tab" onclick="setF('q3',this)">Quận 3</button>
+      <button class="tab" onclick="setF('pn',this)">Phú Nhuận</button>
+      <button class="tab" onclick="setF('tb',this)">Tân Bình</button>
+      <button class="tab" onclick="setF('bt',this)">Bình Thạnh</button>
+      <button class="tab" onclick="setF('gv',this)">Gò Vấp</button>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="sn" id="sTong">-</div>
+      <div class="sl">Căn</div>
+    </div>
+    <div class="stat">
+      <div class="sn" id="sGia">-</div>
+      <div class="sl">Tỷ</div>
+    </div>
+    <div class="stat">
+      <div class="sn" id="sDt">-</div>
+      <div class="sl">m²</div>
+    </div>
+    <div class="stat">
+      <div class="sn" id="sTang">-</div>
+      <div class="sl">Tầng</div>
+    </div>
+    <div class="stat">
+      <div class="sn" id="sQuan">-</div>
+      <div class="sl">Quận</div>
+    </div>
+  </div>
+
+  <main id="list">
+    <div class="sec-lbl">Danh sách bất động sản</div>
+    <div class="loading">
+      <div class="spinner"></div>
+      <div>Đang tải dữ liệu...</div>
+    </div>
+  </main>
+
+  <div class="sfoot">
+    <a href="tel:0979841573" class="fb fcall" id="btnCall">📞 Gọi ngay</a>
+    <a href="https://zalo.me/0979841573" class="fb fzalo" id="btnZalo">💬 Zalo tư vấn</a>
+  </div>
+
+  <div class="overlay" id="ov" onclick="bgC(event)">
+    <div class="sheet">
+      <div class="dh"></div>
+      <div class="shead">
+        <div class="stitle" id="mT"></div>
+        <button class="xbtn" onclick="closeS()">✕</button>
+      </div>
+      <div class="sbody" id="sbody">
+        <div class="gwrap" id="gw">
+          <div class="gtrack" id="gt"></div>
+          <div class="gdots" id="gd"></div>
+          <button class="garr al" id="al" onclick="gm(-1)">‹</button>
+          <button class="garr ar" id="ar" onclick="gm(1)">›</button>
+        </div>
+        <div class="ig" id="mG"></div>
+        <div class="desc" id="mD"></div>
+      </div>
+      <div class="scta">
+        <a href="tel:0979841573" class="cb ccall" id="mCall">📞 Gọi ngay</a>
+        <a href="https://zalo.me/0979841573" class="cb czalo" id="mZalo">💬 Zalo tư vấn</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    //  ⚙️  CẤU HÌNH — CHỈ CẦN SỬA 2 DÒNG NÀY
+    // ============================================================
+    const SHEET_ID = '1klR5iKt_gxempDi9dguJMS8PGEe2YjqRHrMREzwnXc0';  // ← bước 3
+    const SDT = '0979841573';                         // ← số điện thoại thật
+    // ============================================================
+
+    // Cập nhật số điện thoại tự động
+    document.querySelectorAll('[href*="0979841573"]').forEach(el => {
+      el.href = el.href.replace(/0979841573/g, SDT);
+    });
+
+    let DATA = [];
+    let curFilter = 'all';
+
+    // Lấy giá trị ô từ Google Sheets JSON (xử lý null)
+    function cv(cell) { return cell ? (cell.v ?? '') : ''; }
+
+    // Tự động convert link Google Drive → ảnh có thể nhúng
+    // Hỗ trợ: link share /file/d/ID/view, link open?id=ID, link uc?id=ID
+    function fixImgUrl(url) {
+      if (!url) return '';
+      // Đã là dạng thumbnail hoặc uc → giữ nguyên
+      if (url.includes('thumbnail') || url.includes('uc?export')) return url;
+      // Dạng: drive.google.com/file/d/FILE_ID/...
+      const m1 = url.match(/drive\.google\.com\/file\/d\/([^/?\s]+)/);
+      if (m1) return `https://drive.google.com/thumbnail?id=${m1[1]}&sz=w800`;
+      // Dạng: drive.google.com/open?id=FILE_ID
+      const m2 = url.match(/[?&]id=([^&\s]+)/);
+      if (m2) return `https://drive.google.com/thumbnail?id=${m2[1]}&sz=w800`;
+      // Dạng: drive.google.com/uc?id=FILE_ID (cũ)
+      const m3 = url.match(/drive\.google\.com\/uc\?.*id=([^&\s]+)/);
+      if (m3) return `https://drive.google.com/thumbnail?id=${m3[1]}&sz=w800`;
+      // Link thường (Cloudinary, Unsplash, v.v.) → giữ nguyên
+      return url;
+    }
+
+    // Dùng JSONP thay fetch để tránh lỗi CORS khi mở file:// cục bộ
+    function loadData() {
+      // Xóa script cũ nếu có
+      const old = document.getElementById('_gs');
+      if (old) old.remove();
+
+      // Callback toàn cục, Google sẽ gọi hàm này khi load xong
+      window.__gsCallback = function(response) {
+        try {
+          const rows = response.table.rows;
+          DATA = rows
+            .filter(r => r.c[0] && r.c[0].v)
+            .map(r => ({
+              id:   cv(r.c[0]),
+              t:    cv(r.c[1]),
+              dt:   cv(r.c[2]),
+              tang: cv(r.c[3]),
+              mat:  cv(r.c[4]),
+              gia:  cv(r.c[5]),
+              q:    cv(r.c[6]).trim().toLowerCase(),
+              ql:   cv(r.c[7]),
+              m:    cv(r.c[8]),
+              imgs: [cv(r.c[9]), cv(r.c[10]), cv(r.c[11]), cv(r.c[12])].map(fixImgUrl).filter(Boolean)
+            }));
+          updateStats();
+          render(curFilter);
+        } catch(e) {
+          showError('Lỗi parse dữ liệu: ' + e.message);
+        }
+      };
+
+      const s = document.createElement('script');
+      s.id  = '_gs';
+      s.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:__gsCallback`;
+      s.onerror = () => showError('Không kết nối được Google Sheets. Kiểm tra SHEET_ID và quyền truy cập.');
+      document.head.appendChild(s);
+    }
+
+    function showError(msg) {
+      const list = document.getElementById('list');
+      const lbl = list.querySelector('.sec-lbl');
+      list.innerHTML = '';
+      if (lbl) list.appendChild(lbl);
+      list.insertAdjacentHTML('beforeend', `
+    <div class="err-box">
+      <h3>⚠️ Không tải được dữ liệu</h3>
+      <p>Vui lòng kiểm tra:<br>
+      1. SHEET_ID đã đúng chưa<br>
+      2. Sheet đã set "Anyone with link can view"<br><br>
+      Chi tiết: ${msg}</p>
+    </div>`);
+    }
+
+    function updateStats() {
+      const arr = curFilter === 'all' ? DATA : DATA.filter(p => p.q === curFilter);
+      if (!arr.length) return;
+      const gias = arr.map(p => parseFloat(p.gia)).filter(Boolean);
+      const dts = arr.map(p => parseFloat(p.dt)).filter(Boolean);
+      const tangs = arr.map(p => parseFloat(p.tang)).filter(Boolean);
+      const quans = [...new Set(arr.map(p => p.q).filter(Boolean))].length;
+      document.getElementById('sTong').textContent = arr.length;
+      document.getElementById('sTang').textContent = tangs.length ? `${Math.min(...tangs)}–${Math.max(...tangs)}` : '-';
+      document.getElementById('sGia').textContent = gias.length ? `${Math.min(...gias).toFixed(1)}–${Math.max(...gias).toFixed(1)}` : '-';
+      document.getElementById('sDt').textContent = dts.length ? `${Math.min(...dts)}–${Math.max(...dts)}` : '-';
+      document.getElementById('sQuan').textContent = quans || '-';
+      document.getElementById('totalBadge').textContent = `${arr.length} căn HXH`;
+    }
+
+    function render(f) {
+      const list = document.getElementById('list');
+      const lbl = list.querySelector('.sec-lbl');
+      list.innerHTML = '';
+      if (lbl) list.appendChild(lbl);
+
+      const arr = f === 'all' ? DATA : DATA.filter(p => p.q === f);
+
+      if (!arr.length) {
+        list.insertAdjacentHTML('beforeend', '<div style="text-align:center;padding:40px;color:var(--sub)">Không có căn nào trong khu vực này</div>');
+        return;
+      }
+
+      arr.forEach((p, i) => {
+        const thumb = p.imgs[0] || 'https://via.placeholder.com/300x200?text=No+Photo';
+        const c = document.createElement('div');
+        c.className = 'card';
+        c.style.animationDelay = (i * .04) + 's';
+        c.innerHTML = `
+      <div class="crow" onclick="openS('${p.id}')">
+        <div class="ibox">
+          <img src="${thumb}" alt="${p.t}" loading="lazy">
+          <span class="lg">Giảm chào</span>
+          <span class="lc">Chuẩn</span>
+        </div>
+        <div class="info">
+          <div class="ititle">${p.t}</div>
+          <div class="chips">
+            <span class="chip">📐 ${p.dt}m²</span>
+            <span class="chip">🏠 ${p.tang} tầng</span>
+            <span class="chip">📏 ${p.mat}</span>
+          </div>
+          <div class="pr"><span class="pv">${p.gia} tỷ</span><span class="pu">VND</span></div>
+          <div class="loc">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+            ${p.ql}
+          </div>
+        </div>
+      </div>
+      <div class="cfoot">
+        <button class="bsee" onclick="openS('${p.id}')">Xem chi tiết</button>
+        <button class="heart" onclick="th(this)">♡</button>
+      </div>`;
+        list.appendChild(c);
+      });
+    }
+
+    function setF(f, el) {
+      curFilter = f;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+      el.classList.add('on');
+      updateStats();
+      render(f);
+    }
+
+    function th(b) { b.classList.toggle('on'); b.textContent = b.classList.contains('on') ? '♥' : '♡'; }
+
+    // ── Gallery ──
+    let gI = 0, gN = 0, tx = 0;
+    function buildG(imgs) {
+      gI = 0; gN = imgs.length;
+      const gt = document.getElementById('gt'), gd = document.getElementById('gd');
+      gt.innerHTML = ''; gd.innerHTML = '';
+      if (!imgs.length) { document.getElementById('gw').style.display = 'none'; return; }
+      document.getElementById('gw').style.display = '';
+      imgs.forEach((s, i) => {
+        const sl = document.createElement('div'); sl.className = 'gslide';
+        sl.innerHTML = `<img src="${s}" alt="Ảnh ${i + 1}" loading="${i === 0 ? 'eager' : 'lazy'}">`;
+        gt.appendChild(sl);
+        const d = document.createElement('div'); d.className = 'dot' + (i === 0 ? ' on' : '');
+        gd.appendChild(d);
+      });
+      gt.style.transform = 'translateX(0)'; ua();
+      const gw = document.getElementById('gw');
+      gw.ontouchstart = e => { tx = e.touches[0].clientX };
+      gw.ontouchend = e => { const dx = tx - e.changedTouches[0].clientX; if (Math.abs(dx) > 40) gm(dx > 0 ? 1 : -1) };
+    }
+    function gm(d) {
+      gI = Math.max(0, Math.min(gN - 1, gI + d));
+      document.getElementById('gt').style.transform = `translateX(-${gI * 100}%)`;
+      document.querySelectorAll('.dot').forEach((x, i) => x.classList.toggle('on', i === gI));
+      ua();
+    }
+    function ua() {
+      document.getElementById('al').style.display = gI === 0 ? 'none' : 'flex';
+      document.getElementById('ar').style.display = gI === gN - 1 ? 'none' : 'flex';
+    }
+
+    function openS(id) {
+      const p = DATA.find(x => String(x.id) === String(id));
+      if (!p) return;
+      document.getElementById('mT').textContent = p.t;
+      buildG(p.imgs);
+      document.getElementById('mG').innerHTML = `
+    <div class="ib"><div class="il">Giá bán</div><div class="iv hi">${p.gia} tỷ</div></div>
+    <div class="ib"><div class="il">Diện tích</div><div class="iv">${p.dt} m²</div></div>
+    <div class="ib"><div class="il">Số tầng</div><div class="iv">${p.tang} tầng</div></div>
+    <div class="ib"><div class="il">Mặt tiền</div><div class="iv">${p.mat}</div></div>
+    <div class="ib"><div class="il">Quận</div><div class="iv">${p.ql}</div></div>
+    <div class="ib"><div class="il">Loại</div><div class="iv">HXH</div></div>`;
+      document.getElementById('mD').textContent = p.m;
+      document.getElementById('ov').classList.add('open');
+      document.getElementById('sbody').scrollTop = 0;
+      document.body.style.overflow = 'hidden';
+    }
+    function closeS() { document.getElementById('ov').classList.remove('open'); document.body.style.overflow = ''; }
+    function bgC(e) { if (e.target === document.getElementById('ov')) closeS(); }
+
+    // Khởi động
+    loadData();
+  </script>
+</body>
+
+</html>
