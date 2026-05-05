@@ -797,22 +797,17 @@
     // Lấy giá trị ô từ Google Sheets JSON (xử lý null)
     function cv(cell) { return cell ? (cell.v ?? '') : ''; }
 
-    // Tự động convert link Google Drive → ảnh có thể nhúng
-    // Hỗ trợ: link share /file/d/ID/view, link open?id=ID, link uc?id=ID
-    function fixImgUrl(url) {
+    // Tự động convert link Google Drive → ảnh có thể nhúng với kích thước tùy chỉnh
+    function fixImgUrl(url, sz = 'w800') {
       if (!url) return '';
-      // Đã là dạng thumbnail hoặc uc → giữ nguyên
-      if (url.includes('thumbnail') || url.includes('uc?export')) return url;
-      // Dạng: drive.google.com/file/d/FILE_ID/...
+      if (url.includes('thumbnail') || url.includes('uc?export')) {
+        // Nếu là link thumbnail cũ, cập nhật lại kích thước
+        return url.replace(/sz=w\d+/, `sz=${sz}`);
+      }
       const m1 = url.match(/drive\.google\.com\/file\/d\/([^/?\s]+)/);
-      if (m1) return `https://drive.google.com/thumbnail?id=${m1[1]}&sz=w800`;
-      // Dạng: drive.google.com/open?id=FILE_ID
+      if (m1) return `https://drive.google.com/thumbnail?id=${m1[1]}&sz=${sz}`;
       const m2 = url.match(/[?&]id=([^&\s]+)/);
-      if (m2) return `https://drive.google.com/thumbnail?id=${m2[1]}&sz=w800`;
-      // Dạng: drive.google.com/uc?id=FILE_ID (cũ)
-      const m3 = url.match(/drive\.google\.com\/uc\?.*id=([^&\s]+)/);
-      if (m3) return `https://drive.google.com/thumbnail?id=${m3[1]}&sz=w800`;
-      // Link thường (Cloudinary, Unsplash, v.v.) → giữ nguyên
+      if (m2) return `https://drive.google.com/thumbnail?id=${m2[1]}&sz=${sz}`;
       return url;
     }
 
@@ -848,7 +843,7 @@
                 tinh_trang: cv(r.c[12]) || '-', // M
                 giabq: giabq > 0 ? `${giabq} tr/m²` : '-',
                 m: cv(r.c[13]), // N
-                imgs: [cv(r.c[14]), cv(r.c[15]), cv(r.c[16]), cv(r.c[17])].map(fixImgUrl).filter(Boolean) // O,P,Q,R
+                imgs: [cv(r.c[14]), cv(r.c[15]), cv(r.c[16]), cv(r.c[17])].filter(Boolean) // Giữ link gốc để xử lý sau
               };
             });
 
@@ -922,7 +917,8 @@
       }
 
       arr.forEach((p, i) => {
-        const thumb = p.imgs[0] || 'https://via.placeholder.com/300x200?text=No+Photo';
+        // Chỉ load ảnh nhỏ w400 cho danh sách ngoài
+        const thumb = p.imgs[0] ? fixImgUrl(p.imgs[0], 'w400') : 'https://via.placeholder.com/300x200?text=No+Photo';
         const c = document.createElement('div');
         c.className = 'card';
         c.style.animationDelay = (i * .04) + 's';
@@ -1019,7 +1015,8 @@
       const p = DATA.find(x => String(x.id) === String(id));
       if (!p) return;
       document.getElementById('mT').textContent = p.t;
-      buildG(p.imgs);
+      // Load ảnh lớn w1200 cho album chi tiết
+      buildG(p.imgs.map(url => fixImgUrl(url, 'w1200')));
       document.getElementById('mG').innerHTML = `
     <div class="ib"><div class="il">Giá bán</div><div class="iv hi">${p.gia} tỷ</div></div>
     <div class="ib"><div class="il">Diện tích</div><div class="iv">${p.dt} m²</div></div>
