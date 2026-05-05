@@ -746,7 +746,7 @@
   <header>
     <div class="hdr-top">
       <h1>🏠 Khang Ngô Nhà Phố</h1>
-      <span class="badge" id="totalBadge">Đang tải...</span>
+      <span class="badge" id="totalBadge">... BĐS</span>
     </div>
     <div class="tabs">
       <button class="tab on" onclick="setF('all',this)">Tất cả</button>
@@ -954,7 +954,7 @@
       document.getElementById('sGia').textContent = gias.length ? `${Math.min(...gias).toFixed(1)}–${Math.max(...gias).toFixed(1)}` : '-';
       document.getElementById('sDt').textContent = dts.length ? `${Math.min(...dts)}–${Math.max(...dts)}` : '-';
       document.getElementById('sQuan').textContent = quans || '-';
-      document.getElementById('totalBadge').textContent = `${arr.length} căn HXH`;
+      document.getElementById('totalBadge').textContent = `${arr.length} BĐS`;
     }
 
     function render(f) {
