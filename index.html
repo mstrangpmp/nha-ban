@@ -842,7 +842,15 @@
     const isAdmin = urlParams.get('pwd') === ADMIN_PASSWORD;
     const shareToken = urlParams.get('s');
     if (isAdmin) document.body.classList.add('is-admin');
-    // ============================================================
+    
+    // Logic chia sẻ mới: chỉ lưu danh sách ID
+    let sharedIds = null;
+    if (shareToken) {
+      try {
+        sharedIds = JSON.parse(atob(shareToken));
+        if (!Array.isArray(sharedIds)) sharedIds = null;
+      } catch (e) { console.error("Lỗi giải mã share token", e); }
+    }
 
     //  ⚙️  CẤU HÌNH 
     const SHEET_ID = '1klR5iKt_gxempDi9dguJMS8PGEe2YjqRHrMREzwnXc0'; 
@@ -885,7 +893,7 @@
       window.__gsCallback = function (response) {
         try {
           const rows = response.table.rows;
-          DATA = rows
+          const fullList = rows
             .filter(r => r.c[0] && r.c[0].v)
             .map(r => {
               const dt = parseFloat(cv(r.c[2])) || 0;
@@ -904,9 +912,11 @@
                 loai_hinh: cv(r.c[9]) || 'Hẻm', // J
                 huong: cv(r.c[10]) || '-', // K
                 duong: cv(r.c[11]) || '-', // L
+                rong_hem: cv(r.c[12]) || '-', // M
+                tinh_trang: cv(r.c[13]) || '-', // N
                 danh_gia: cv(r.c[14]) || '', // O
                 p_ngu_tret: cv(r.c[15]) || '-', // P
-                chdv: cv(r.c[16]) || '-', // Q (MỚI)
+                chdv: cv(r.c[16]) || '-', // Q
                 giabq: giabq > 0 ? `${giabq} tr/m²` : '-',
                 m: cv(r.c[17]), // R
                 imgs: [
@@ -917,18 +927,14 @@
             });
 
           // Lọc dữ liệu nếu là khách được chia sẻ link
-          if (shareToken) {
-            try {
-              const allowedIds = JSON.parse(atob(shareToken)); // Giải mã Base64
-              DATA = DATA.filter(p => allowedIds.includes(String(p.id)));
-            } catch(e) {
-              DATA = [];
-              showError('Đường link không hợp lệ hoặc đã hết hạn.');
-            }
+          if (sharedIds) {
+            DATA = fullList.filter(p => sharedIds.map(String).includes(String(p.id)));
           } else if (!isAdmin) {
             // Nếu không phải admin và không có link share
             DATA = []; 
             showError('Vui lòng liên hệ Khang Ngô Nhà Phố để được cung cấp thông tin.');
+          } else {
+            DATA = fullList;
           }
 
           updateStats();
