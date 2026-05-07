@@ -360,6 +360,16 @@
       opacity: 0.7;
     }
 
+    /* Nhãn đánh giá hàng */
+    .tag-ngon { background: #27ae60; color: #fff; }
+    .tag-loi { background: #7f8c8d; color: #fff; }
+    .tag-badge {
+      position: absolute; top: 10px; right: 0;
+      padding: 3px 8px; font-size: 10px; font-weight: 800;
+      border-radius: 8px 0 0 8px; z-index: 4;
+      box-shadow: -2px 2px 4px rgba(0,0,0,0.1);
+    }
+
     .ititle {
       font-size: 13.5px;
       font-weight: 700;
@@ -890,14 +900,15 @@
                 loai_hinh: cv(r.c[9]) || 'Hẻm', // J
                 huong: cv(r.c[10]) || '-', // K
                 duong: cv(r.c[11]) || '-', // L
-                rong_hem: cv(r.c[12]) || '-', // M
                 tinh_trang: cv(r.c[13]) || '-', // N
+                danh_gia: cv(r.c[14]) || '', // O (MỚI)
+                p_ngu_tret: cv(r.c[15]) || '-', // P (MỚI)
                 giabq: giabq > 0 ? `${giabq} tr/m²` : '-',
-                m: cv(r.c[14]), // O
+                m: cv(r.c[16]), // Q
                 imgs: [
-                  cv(r.c[15]), cv(r.c[16]), cv(r.c[17]), cv(r.c[18]), cv(r.c[19]), 
-                  cv(r.c[20]), cv(r.c[21]), cv(r.c[22]), cv(r.c[23]), cv(r.c[24])
-                ].filter(Boolean) // P đến Y
+                  cv(r.c[17]), cv(r.c[18]), cv(r.c[19]), cv(r.c[20]), cv(r.c[21]), 
+                  cv(r.c[22]), cv(r.c[23]), cv(r.c[24]), cv(r.c[25]), cv(r.c[26])
+                ].filter(Boolean) // R đến AA
               };
             });
 
@@ -981,6 +992,7 @@
       <div class="crow" onclick="openS('${p.id}')">
         <div class="ibox">
           <img src="${thumb}" alt="${p.t}" loading="lazy" onload="this.parentElement.classList.add('is-loaded'); this.classList.add('loaded');">
+          ${p.danh_gia ? `<span class="tag-badge ${p.danh_gia === 'Hàng Ngon' ? 'tag-ngon' : 'tag-loi'}">${p.danh_gia.toUpperCase()}</span>` : ''}
         </div>
         <div class="info">
           <div class="ititle">${p.t}</div>
@@ -1085,7 +1097,9 @@
     <div class="ib"><div class="il">Số tầng</div><div class="iv">${p.tang}</div></div>
     <div class="ib"><div class="il">Mặt tiền</div><div class="iv">${p.mat} m</div></div>
     <div class="ib"><div class="il">Hướng</div><div class="iv">${p.huong}</div></div>
-    <div class="ib"><div class="il">Tình trạng</div><div class="iv">${p.tinh_trang}</div></div>`;
+    <div class="ib"><div class="il">Tình trạng</div><div class="iv">${p.tinh_trang}</div></div>
+    <div class="ib"><div class="il">P.Ngủ trệt</div><div class="iv">${p.p_ngu_tret}</div></div>
+    <div class="ib"><div class="il">Đánh giá</div><div class="iv ${p.danh_gia === 'Hàng Ngon' ? 'hi' : ''}">${p.danh_gia || '-'}</div></div>`;
       document.getElementById('mD').textContent = p.m;
       
       // Cấu hình nút hỏi Zalo
