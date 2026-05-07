@@ -893,7 +893,7 @@
       window.__gsCallback = function (response) {
         try {
           const rows = response.table.rows;
-          DATA = rows
+          const fullList = rows
             .filter(r => r.c[0] && r.c[0].v)
             .map(r => {
               const dt = parseFloat(cv(r.c[2])) || 0;
@@ -928,13 +928,13 @@
 
           // Lọc dữ liệu nếu là khách được chia sẻ link
           if (sharedIds) {
-            DATA = list.filter(p => sharedIds.map(String).includes(String(p.id)));
+            DATA = fullList.filter(p => sharedIds.map(String).includes(String(p.id)));
           } else if (!isAdmin) {
             // Nếu không phải admin và không có link share
             DATA = []; 
             showError('Vui lòng liên hệ Khang Ngô Nhà Phố để được cung cấp thông tin.');
           } else {
-            DATA = list;
+            DATA = fullList;
           }
 
           updateStats();
