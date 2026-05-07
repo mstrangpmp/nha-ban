@@ -765,6 +765,8 @@
       <button class="tab" onclick="setF('tb',this)">Tân Bình</button>
       <button class="tab" onclick="setF('bt',this)">Bình Thạnh</button>
       <button class="tab" onclick="setF('gv',this)">Gò Vấp</button>
+      <button class="tab" style="background:var(--gold);color:#fff" onclick="setF('ngon',this)">💎 Ngon</button>
+      <button class="tab" style="background:#7f8c8d;color:#fff" onclick="setF('loi',this)">⚠️ Lỗi</button>
     </div>
   </header>
 
@@ -974,7 +976,11 @@
       list.innerHTML = '';
       if (lbl) list.appendChild(lbl);
 
-      const arr = f === 'all' ? DATA : DATA.filter(p => p.q === f);
+      const arr = (f === 'all') ? DATA : DATA.filter(p => {
+        if (f === 'ngon') return p.danh_gia === 'Hàng Ngon';
+        if (f === 'loi') return p.danh_gia === 'Hàng Lỗi';
+        return p.q === f;
+      });
 
       if (!arr.length) {
         list.insertAdjacentHTML('beforeend', '<div style="text-align:center;padding:60px 20px;color:var(--sub);font-weight:500;">Vui lòng liên hệ Khang Ngô Nhà Phố để được cung cấp thông tin.</div>');
@@ -992,7 +998,6 @@
       <div class="crow" onclick="openS('${p.id}')">
         <div class="ibox">
           <img src="${thumb}" alt="${p.t}" loading="lazy" onload="this.parentElement.classList.add('is-loaded'); this.classList.add('loaded');">
-          ${p.danh_gia ? `<span class="tag-badge ${p.danh_gia === 'Hàng Ngon' ? 'tag-ngon' : 'tag-loi'}">${p.danh_gia.toUpperCase()}</span>` : ''}
         </div>
         <div class="info">
           <div class="ititle">${p.t}</div>
@@ -1099,8 +1104,7 @@
     <div class="ib"><div class="il">Hướng</div><div class="iv">${p.huong}</div></div>
     <div class="ib"><div class="il">Tình trạng</div><div class="iv">${p.tinh_trang}</div></div>
     <div class="ib"><div class="il">P.Ngủ trệt</div><div class="iv">${p.p_ngu_tret}</div></div>
-    <div class="ib"><div class="il">CHDV</div><div class="iv">${p.chdv}</div></div>
-    <div class="ib"><div class="il">Đánh giá</div><div class="iv ${p.danh_gia === 'Hàng Ngon' ? 'hi' : ''}">${p.danh_gia || '-'}</div></div>`;
+    <div class="ib"><div class="il">CHDV</div><div class="iv">${p.chdv}</div></div>`;
       document.getElementById('mD').textContent = p.m;
       
       // Cấu hình nút hỏi Zalo
