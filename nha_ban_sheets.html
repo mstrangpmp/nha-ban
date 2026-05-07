@@ -842,7 +842,15 @@
     const isAdmin = urlParams.get('pwd') === ADMIN_PASSWORD;
     const shareToken = urlParams.get('s');
     if (isAdmin) document.body.classList.add('is-admin');
-    // ============================================================
+    
+    // Logic chia sẻ mới: chỉ lưu danh sách ID
+    let sharedIds = null;
+    if (shareToken) {
+      try {
+        sharedIds = JSON.parse(atob(shareToken));
+        if (!Array.isArray(sharedIds)) sharedIds = null;
+      } catch (e) { console.error("Lỗi giải mã share token", e); }
+    }
 
     //  ⚙️  CẤU HÌNH 
     const SHEET_ID = '1klR5iKt_gxempDi9dguJMS8PGEe2YjqRHrMREzwnXc0'; 
@@ -917,18 +925,14 @@
             });
 
           // Lọc dữ liệu nếu là khách được chia sẻ link
-          if (shareToken) {
-            try {
-              const allowedIds = JSON.parse(atob(shareToken)); // Giải mã Base64
-              DATA = DATA.filter(p => allowedIds.includes(String(p.id)));
-            } catch(e) {
-              DATA = [];
-              showError('Đường link không hợp lệ hoặc đã hết hạn.');
-            }
+          if (sharedIds) {
+            DATA = list.filter(p => sharedIds.map(String).includes(String(p.id)));
           } else if (!isAdmin) {
             // Nếu không phải admin và không có link share
             DATA = []; 
             showError('Vui lòng liên hệ Khang Ngô Nhà Phố để được cung cấp thông tin.');
+          } else {
+            DATA = list;
           }
 
           updateStats();
