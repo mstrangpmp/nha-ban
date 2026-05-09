@@ -60,6 +60,18 @@
     }
     .filter-btn.active { background: #fff; color: var(--red); border-color: #fff; }
 
+    .reset-btn {
+      background: rgba(255,255,255,.15);
+      color: rgba(255,255,255,.9);
+      border: 1.5px solid rgba(255,255,255,.4);
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 12px; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+      font-family: inherit; min-height: 36px;
+      flex-shrink: 0;
+    }
+
     .filter-summary {
       color: rgba(255,255,255,.8); font-size: 12px; font-weight: 600;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;
@@ -810,6 +822,7 @@
     <div class="filter-bar">
       <button class="filter-btn" id="filterBtn" onclick="toggleFilter()">🎚 Bộ lọc</button>
       <span class="filter-summary" id="filterSummary">Tất cả</span>
+      <button class="reset-btn" id="resetBtn" onclick="resetFilters()" style="display:none">↺ Xóa lọc</button>
     </div>
     <!-- Collapsible panel -->
     <div class="filter-panel" id="filterPanel">
@@ -1167,8 +1180,19 @@
       if (selGia.size)       parts.push([...selGia].map(g=>gNames[g]||g).join('+'));
       if (selDanhGia.size)   parts.push([...selDanhGia].map(d=>d==='Hàng Ngon'?'💎':'⚠️').join(''));
       document.getElementById('filterSummary').textContent = parts.length ? parts.join(' · ') : 'Tất cả';
-      const anyActive = selDistricts.size||selWards.size||selDuongs.size||selGia.size||selDanhGia.size||filterOpen;
-      document.getElementById('filterBtn').classList.toggle('active', !!anyActive);
+      const anyActive = !!(selDistricts.size||selWards.size||selDuongs.size||selGia.size||selDanhGia.size);
+      document.getElementById('filterBtn').classList.toggle('active', anyActive || filterOpen);
+      document.getElementById('resetBtn').style.display = anyActive ? 'inline-flex' : 'none';
+    }
+
+    function resetFilters() {
+      selDistricts.clear(); selWards.clear(); selDuongs.clear(); selGia.clear(); selDanhGia.clear();
+      syncTabUI('districtTabs', selDistricts);
+      syncTabUI('giaTabs', selGia);
+      syncTabUI('danhGiaTabs', selDanhGia);
+      // Ward & Duong tabs cần rebuild vì là dynamic
+      buildWardTabs(); buildDuongTabs();
+      updateFilterSummary(); updateStats(); render();
     }
 
     function render() {
