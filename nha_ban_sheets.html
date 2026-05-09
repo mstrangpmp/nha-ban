@@ -978,7 +978,7 @@
                 rong_hem: cv(r.c[12]) || '-', // M
                 tinh_trang: cv(r.c[13]) || '-', // N
                 danh_gia: cv(r.c[14]) || '', // O
-                p_ngu_tret: cv(r.c[15]) || '-', // P
+                ngu_tang_tret: cv(r.c[15]) || '-', // P — ngu_tang_tret
                 chdv: cv(r.c[16]) || '-', // Q
                 giabq: giabq > 0 ? `${giabq} tr/m²` : '-',
                 m: cv(r.c[17]), // R
@@ -1257,7 +1257,7 @@
     <div class="ib"><div class="il">Mặt tiền</div><div class="iv">${p.mat} m</div></div>
     <div class="ib"><div class="il">Hướng</div><div class="iv">${p.huong}</div></div>
     <div class="ib"><div class="il">Tình trạng</div><div class="iv">${p.tinh_trang}</div></div>
-    <div class="ib"><div class="il">P.Ngủ trệt</div><div class="iv">${p.p_ngu_tret}</div></div>
+    <div class="ib"><div class="il">Ngủ tầng trệt</div><div class="iv">${p.ngu_tang_tret}</div></div>
     <div class="ib"><div class="il">CHDV</div><div class="iv">${p.chdv}</div></div>`;
       document.getElementById('mD').textContent = p.m;
       
