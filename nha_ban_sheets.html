@@ -72,7 +72,7 @@
       transition: max-height .32s cubic-bezier(.4,0,.2,1);
     }
     body.is-admin .filter-panel { display: block; }
-    .filter-panel.open { max-height: 320px; }
+    .filter-panel.open { max-height: 420px; }
 
     .filter-section-lbl {
       font-size: 10px; font-weight: 700;
@@ -829,6 +829,15 @@
       <div class="tabs" id="wardTabs"></div>
       <div class="filter-section-lbl" id="duongLbl" style="display:none">Đường trước nhà</div>
       <div class="tabs" id="duongTabs"></div>
+      <div class="filter-section-lbl">Khoảng giá</div>
+      <div class="tabs" id="giaTabs">
+        <button class="tab on" onclick="setGia('all',this)">Tất cả</button>
+        <button class="tab" onclick="setGia('lt7',this)">Dưới 7 tỷ</button>
+        <button class="tab" onclick="setGia('7-10',this)">7–10 tỷ</button>
+        <button class="tab" onclick="setGia('10-15',this)">10–15 tỷ</button>
+        <button class="tab" onclick="setGia('15-20',this)">15–20 tỷ</button>
+        <button class="tab" onclick="setGia('gt20',this)">Trên 20 tỷ</button>
+      </div>
     </div>
   </header>
 
@@ -926,6 +935,7 @@
     let curFilter = 'all';
     let curWard = 'all';
     let curDuong = 'all';
+    let curGia = 'all';
     let filterOpen = false;
     const SELECTED_IDS = new Set();
 
@@ -1106,13 +1116,25 @@
       render(curFilter);
     }
 
+    function setGia(g, el) {
+      curGia = g;
+      document.querySelectorAll('#giaTabs .tab').forEach(t => t.classList.remove('on'));
+      el.classList.add('on');
+      updateFilterSummary();
+      updateStats();
+      render(curFilter);
+    }
+
     function updateFilterSummary() {
       const names = {all:'Tất cả',q3:'Quận 3',pn:'Phú Nhuận',tb:'Tân Bình',bt:'Bình Thạnh',gv:'Gò Vấp',q10:'Quận 10',ngon:'💎 Ngon',loi:'⚠️ Lỗi'};
+      const giaLabels = {'lt7':'<7 tỷ','7-10':'7–10 tỷ','10-15':'10–15 tỷ','15-20':'15–20 tỷ','gt20':'>20 tỷ'};
       let s = names[curFilter] || curFilter;
       if (curWard !== 'all') s += ' · P.' + curWard;
       if (curDuong !== 'all') s += ' · ' + curDuong;
+      if (curGia !== 'all') s += ' · ' + (giaLabels[curGia] || curGia);
       document.getElementById('filterSummary').textContent = s;
-      document.getElementById('filterBtn').classList.toggle('active', curFilter !== 'all' || curWard !== 'all' || curDuong !== 'all' || filterOpen);
+      const anyActive = curFilter !== 'all' || curWard !== 'all' || curDuong !== 'all' || curGia !== 'all' || filterOpen;
+      document.getElementById('filterBtn').classList.toggle('active', anyActive);
     }
 
     function render(f) {
@@ -1130,6 +1152,16 @@
       if (curWard !== 'all') arr = arr.filter(p => p.phuong === curWard);
       // Áp dụng filter đường trước nhà
       if (curDuong !== 'all') arr = arr.filter(p => p.duong_truoc_nha === curDuong);
+      // Áp dụng filter khoảng giá
+      if (curGia !== 'all') arr = arr.filter(p => {
+        const g = parseFloat(p.gia) || 0;
+        if (curGia === 'lt7')   return g < 7;
+        if (curGia === '7-10')  return g >= 7 && g <= 10;
+        if (curGia === '10-15') return g > 10 && g <= 15;
+        if (curGia === '15-20') return g > 15 && g <= 20;
+        if (curGia === 'gt20')  return g > 20;
+        return true;
+      });
 
       if (!arr.length) {
         list.insertAdjacentHTML('beforeend', '<div style="text-align:center;padding:60px 20px;color:var(--sub);font-weight:500;">Vui lòng liên hệ Khang Ngô Nhà Phố để được cung cấp thông tin.</div>');
