@@ -26,13 +26,58 @@
 
     /* 2026-05-05: Cache Busting Fix */
     .tabs, .stats { display: none !important; }
-    
     body.is-admin .tabs, body.is-admin .stats { display: flex !important; }
-    
+    /* Ward tabs: ẩn mặc định, JS tự bật khi có dữ liệu */
+    #wardTabs { display: none !important; }
+    body.is-admin #wardTabs.has-wards { display: flex !important; }
+
     body:not(.is-admin) header { padding-bottom: 14px; }
 
     .admin-only { display: none; }
     body.is-admin .admin-only { display: block; }
+
+    /* ── Filter toggle bar ── */
+    .filter-bar {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 0 0 10px;
+    }
+    body.is-admin .filter-bar { display: flex; }
+
+    .filter-btn {
+      background: rgba(255,255,255,.18);
+      color: rgba(255,255,255,.95);
+      border: 1.5px solid rgba(255,255,255,.35);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+      font-family: inherit; min-height: 36px;
+      display: flex; align-items: center; gap: 5px; flex-shrink: 0;
+    }
+    .filter-btn.active { background: #fff; color: var(--red); border-color: #fff; }
+
+    .filter-summary {
+      color: rgba(255,255,255,.8); font-size: 12px; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;
+    }
+
+    /* ── Collapsible filter panel ── */
+    .filter-panel {
+      display: none; /* admin-only */
+      max-height: 0; overflow: hidden;
+      transition: max-height .32s cubic-bezier(.4,0,.2,1);
+    }
+    body.is-admin .filter-panel { display: block; }
+    .filter-panel.open { max-height: 240px; }
+
+    .filter-section-lbl {
+      font-size: 10px; font-weight: 700;
+      color: rgba(255,255,255,.5);
+      text-transform: uppercase; letter-spacing: 1px;
+      padding: 6px 2px 3px;
+    }
     
     .share-btn-float {
       position: fixed; bottom: 85px; right: 20px;
@@ -759,16 +804,27 @@
       <h1>🏠 Khang Ngô Nhà Phố</h1>
       <span class="badge" id="totalBadge">... BĐS</span>
     </div>
-    <div class="tabs">
-      <button class="tab on" onclick="setF('all',this)">Tất cả</button>
-      <button class="tab" onclick="setF('q3',this)">Quận 3</button>
-      <button class="tab" onclick="setF('pn',this)">Phú Nhuận</button>
-      <button class="tab" onclick="setF('tb',this)">Tân Bình</button>
-      <button class="tab" onclick="setF('bt',this)">Bình Thạnh</button>
-      <button class="tab" onclick="setF('gv',this)">Gò Vấp</button>
-      <button class="tab" onclick="setF('q10',this)">Quận 10</button>
-      <button class="tab" style="background:var(--gold);color:#fff" onclick="setF('ngon',this)">💎 Ngon</button>
-      <button class="tab" style="background:#7f8c8d;color:#fff" onclick="setF('loi',this)">⚠️ Lỗi</button>
+    <!-- Admin: nút mở bộ lọc -->
+    <div class="filter-bar">
+      <button class="filter-btn" id="filterBtn" onclick="toggleFilter()">🎚 Bộ lọc</button>
+      <span class="filter-summary" id="filterSummary">Tất cả</span>
+    </div>
+    <!-- Collapsible panel -->
+    <div class="filter-panel" id="filterPanel">
+      <div class="filter-section-lbl">Quận / TP</div>
+      <div class="tabs" id="districtTabs">
+        <button class="tab on" onclick="setF('all',this)">Tất cả</button>
+        <button class="tab" onclick="setF('q3',this)">Quận 3</button>
+        <button class="tab" onclick="setF('pn',this)">Phú Nhuận</button>
+        <button class="tab" onclick="setF('tb',this)">Tân Bình</button>
+        <button class="tab" onclick="setF('bt',this)">Bình Thạnh</button>
+        <button class="tab" onclick="setF('gv',this)">Gò Vấp</button>
+        <button class="tab" onclick="setF('q10',this)">Quận 10</button>
+        <button class="tab" style="background:var(--gold);color:#fff" onclick="setF('ngon',this)">💎 Ngon</button>
+        <button class="tab" style="background:#7f8c8d;color:#fff" onclick="setF('loi',this)">⚠️ Lỗi</button>
+      </div>
+      <div class="filter-section-lbl" id="wardLbl" style="display:none">Phường</div>
+      <div class="tabs" id="wardTabs"></div>
     </div>
   </header>
 
@@ -864,6 +920,8 @@
 
     let DATA = [];
     let curFilter = 'all';
+    let curWard = 'all';
+    let filterOpen = false;
     const SELECTED_IDS = new Set();
 
     // Lấy giá trị ô từ Google Sheets JSON (xử lý null)
@@ -940,6 +998,7 @@
           // Sắp xếp dữ liệu theo giá từ cao xuống thấp
           DATA.sort((a, b) => (parseFloat(b.gia) || 0) - (parseFloat(a.gia) || 0));
 
+          buildWardTabs();
           updateStats();
           render(curFilter);
         } catch (e) {
@@ -981,17 +1040,65 @@
       document.getElementById('totalBadge').textContent = `${arr.length} BĐS`;
     }
 
+    // ── Filter panel toggle ──
+    function toggleFilter() {
+      filterOpen = !filterOpen;
+      document.getElementById('filterPanel').classList.toggle('open', filterOpen);
+      const btn = document.getElementById('filterBtn');
+      btn.textContent = filterOpen ? '✕ Đóng' : '🎚 Bộ lọc';
+      btn.classList.toggle('active', filterOpen);
+    }
+
+    // ── Build ward tabs dynamically ──
+    function buildWardTabs() {
+      let pool = DATA;
+      if (curFilter !== 'all' && curFilter !== 'ngon' && curFilter !== 'loi') {
+        pool = DATA.filter(p => p.q === curFilter);
+      }
+      const wards = [...new Set(pool.map(p => p.phuong).filter(w => w && w !== '-'))].sort();
+      const wt = document.getElementById('wardTabs');
+      const wl = document.getElementById('wardLbl');
+      if (!wards.length) {
+        wt.classList.remove('has-wards');
+        wl.style.display = 'none';
+        return;
+      }
+      wl.style.display = 'block';
+      wt.innerHTML = `<button class="tab ${curWard==='all'?'on':''}" onclick="setWard('all',this)">Tất cả</button>`
+        + wards.map(w => `<button class="tab ${curWard===w?'on':''}" onclick="setWard('${w}',this)">${w}</button>`).join('');
+      wt.classList.add('has-wards');
+    }
+
+    function setWard(w, el) {
+      curWard = w;
+      document.querySelectorAll('#wardTabs .tab').forEach(t => t.classList.remove('on'));
+      el.classList.add('on');
+      updateFilterSummary();
+      updateStats();
+      render(curFilter);
+    }
+
+    function updateFilterSummary() {
+      const names = {all:'Tất cả',q3:'Quận 3',pn:'Phú Nhuận',tb:'Tân Bình',bt:'Bình Thạnh',gv:'Gò Vấp',q10:'Quận 10',ngon:'💎 Ngon',loi:'⚠️ Lỗi'};
+      let s = names[curFilter] || curFilter;
+      if (curWard !== 'all') s += ' · P.' + curWard;
+      document.getElementById('filterSummary').textContent = s;
+      document.getElementById('filterBtn').classList.toggle('active', curFilter !== 'all' || curWard !== 'all' || filterOpen);
+    }
+
     function render(f) {
       const list = document.getElementById('list');
       const lbl = list.querySelector('.sec-lbl');
       list.innerHTML = '';
       if (lbl) list.appendChild(lbl);
 
-      const arr = (f === 'all') ? DATA : DATA.filter(p => {
+      let arr = (f === 'all') ? DATA : DATA.filter(p => {
         if (f === 'ngon') return p.danh_gia === 'Hàng Ngon';
         if (f === 'loi') return p.danh_gia === 'Hàng Lỗi';
         return p.q === f;
       });
+      // Áp dụng filter phường
+      if (curWard !== 'all') arr = arr.filter(p => p.phuong === curWard);
 
       if (!arr.length) {
         list.insertAdjacentHTML('beforeend', '<div style="text-align:center;padding:60px 20px;color:var(--sub);font-weight:500;">Vui lòng liên hệ Khang Ngô Nhà Phố để được cung cấp thông tin.</div>');
@@ -1037,8 +1144,11 @@
 
     function setF(f, el) {
       curFilter = f;
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+      curWard = 'all'; // reset phường khi đổi quận
+      document.querySelectorAll('#districtTabs .tab').forEach(t => t.classList.remove('on'));
       el.classList.add('on');
+      buildWardTabs();
+      updateFilterSummary();
       updateStats();
       render(f);
     }
