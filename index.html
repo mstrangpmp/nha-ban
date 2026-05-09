@@ -72,7 +72,7 @@
       transition: max-height .32s cubic-bezier(.4,0,.2,1);
     }
     body.is-admin .filter-panel { display: block; }
-    .filter-panel.open { max-height: 420px; }
+    .filter-panel.open { max-height: 520px; }
 
     .filter-section-lbl {
       font-size: 10px; font-weight: 700;
@@ -815,15 +815,13 @@
     <div class="filter-panel" id="filterPanel">
       <div class="filter-section-lbl">Quận / TP</div>
       <div class="tabs" id="districtTabs">
-        <button class="tab on" onclick="setF('all',this)">Tất cả</button>
-        <button class="tab" onclick="setF('q3',this)">Quận 3</button>
-        <button class="tab" onclick="setF('pn',this)">Phú Nhuận</button>
-        <button class="tab" onclick="setF('tb',this)">Tân Bình</button>
-        <button class="tab" onclick="setF('bt',this)">Bình Thạnh</button>
-        <button class="tab" onclick="setF('gv',this)">Gò Vấp</button>
-        <button class="tab" onclick="setF('q10',this)">Quận 10</button>
-        <button class="tab" style="background:var(--gold);color:#fff" onclick="setF('ngon',this)">💎 Ngon</button>
-        <button class="tab" style="background:#7f8c8d;color:#fff" onclick="setF('loi',this)">⚠️ Lỗi</button>
+        <button class="tab on" data-val="all" onclick="tDistrict('all')">Tất cả</button>
+        <button class="tab" data-val="q3" onclick="tDistrict('q3')">Quận 3</button>
+        <button class="tab" data-val="q10" onclick="tDistrict('q10')">Quận 10</button>
+        <button class="tab" data-val="pn" onclick="tDistrict('pn')">Phú Nhuận</button>
+        <button class="tab" data-val="tb" onclick="tDistrict('tb')">Tân Bình</button>
+        <button class="tab" data-val="bt" onclick="tDistrict('bt')">Bình Thạnh</button>
+        <button class="tab" data-val="gv" onclick="tDistrict('gv')">Gò Vấp</button>
       </div>
       <div class="filter-section-lbl" id="wardLbl" style="display:none">Phường</div>
       <div class="tabs" id="wardTabs"></div>
@@ -831,12 +829,18 @@
       <div class="tabs" id="duongTabs"></div>
       <div class="filter-section-lbl">Khoảng giá</div>
       <div class="tabs" id="giaTabs">
-        <button class="tab on" onclick="setGia('all',this)">Tất cả</button>
-        <button class="tab" onclick="setGia('lt7',this)">Dưới 7 tỷ</button>
-        <button class="tab" onclick="setGia('7-10',this)">7–10 tỷ</button>
-        <button class="tab" onclick="setGia('10-15',this)">10–15 tỷ</button>
-        <button class="tab" onclick="setGia('15-20',this)">15–20 tỷ</button>
-        <button class="tab" onclick="setGia('gt20',this)">Trên 20 tỷ</button>
+        <button class="tab on" data-val="all" onclick="tGia('all')">Tất cả</button>
+        <button class="tab" data-val="lt7" onclick="tGia('lt7')">Dưới 7 tỷ</button>
+        <button class="tab" data-val="7-10" onclick="tGia('7-10')">7–10 tỷ</button>
+        <button class="tab" data-val="10-15" onclick="tGia('10-15')">10–15 tỷ</button>
+        <button class="tab" data-val="15-20" onclick="tGia('15-20')">15–20 tỷ</button>
+        <button class="tab" data-val="gt20" onclick="tGia('gt20')">Trên 20 tỷ</button>
+      </div>
+      <div class="filter-section-lbl">Đánh giá</div>
+      <div class="tabs" id="danhGiaTabs">
+        <button class="tab on" data-val="all" onclick="tDanhGia('all')">Tất cả</button>
+        <button class="tab" data-val="Hàng Ngon" style="background:var(--gold);color:#fff" onclick="tDanhGia('Hàng Ngon')">💎 Ngon</button>
+        <button class="tab" data-val="Hàng Lỗi" style="background:#7f8c8d;color:#fff" onclick="tDanhGia('Hàng Lỗi')">⚠️ Lỗi</button>
       </div>
     </div>
   </header>
@@ -932,11 +936,47 @@
     });
 
     let DATA = [];
-    let curFilter = 'all';
-    let curWard = 'all';
-    let curDuong = 'all';
-    let curGia = 'all';
+    const selDistricts = new Set();
+    const selWards    = new Set();
+    const selDuongs   = new Set();
+    const selGia      = new Set();
+    const selDanhGia  = new Set();
     let filterOpen = false;
+
+    // ── Multi-select helper ──
+    function tSel(set, val) {
+      if (val === 'all') { set.clear(); return; }
+      if (set.has(val)) set.delete(val); else set.add(val);
+    }
+    function syncTabUI(containerId, set) {
+      document.querySelectorAll('#' + containerId + ' .tab').forEach(btn => {
+        const v = btn.getAttribute('data-val');
+        btn.classList.toggle('on', v === 'all' ? set.size === 0 : set.has(v));
+      });
+    }
+    function applyGia(arr) {
+      if (!selGia.size) return arr;
+      return arr.filter(p => {
+        const g = parseFloat(p.gia) || 0;
+        return [...selGia].some(r => {
+          if (r === 'lt7')   return g < 7;
+          if (r === '7-10')  return g >= 7  && g <= 10;
+          if (r === '10-15') return g > 10  && g <= 15;
+          if (r === '15-20') return g > 15  && g <= 20;
+          if (r === 'gt20')  return g > 20;
+          return false;
+        });
+      });
+    }
+    function getFiltered() {
+      let a = DATA;
+      if (selDistricts.size) a = a.filter(p => selDistricts.has(p.q));
+      if (selWards.size)     a = a.filter(p => selWards.has(p.phuong));
+      if (selDuongs.size)    a = a.filter(p => selDuongs.has(p.duong_truoc_nha));
+      a = applyGia(a);
+      if (selDanhGia.size)   a = a.filter(p => selDanhGia.has(p.danh_gia));
+      return a;
+    }
     const SELECTED_IDS = new Set();
 
     // Lấy giá trị ô từ Google Sheets JSON (xử lý null)
@@ -1016,7 +1056,7 @@
           buildWardTabs();
           buildDuongTabs();
           updateStats();
-          render(curFilter);
+          render();
         } catch (e) {
           showError('Lỗi parse dữ liệu: ' + e.message);
         }
@@ -1042,16 +1082,16 @@
     }
 
     function updateStats() {
-      const arr = curFilter === 'all' ? DATA : DATA.filter(p => p.q === curFilter);
-      if (!arr.length) return;
+      const arr = getFiltered();
+      if (!arr.length) { document.getElementById('totalBadge').textContent = '0 BĐS'; return; }
       const gias = arr.map(p => parseFloat(p.gia)).filter(Boolean);
-      const dts = arr.map(p => parseFloat(p.dt)).filter(Boolean);
-      const tangs = arr.map(p => parseFloat(p.tang)).filter(Boolean);
-      const quans = [...new Set(arr.map(p => p.q).filter(Boolean))].length;
+      const dts  = arr.map(p => parseFloat(p.dt)).filter(Boolean);
+      const tangs= arr.map(p => parseFloat(p.tang)).filter(Boolean);
+      const quans= [...new Set(arr.map(p => p.q).filter(Boolean))].length;
       document.getElementById('sTong').textContent = arr.length;
       document.getElementById('sTang').textContent = tangs.length ? `${Math.min(...tangs)}–${Math.max(...tangs)}` : '-';
-      document.getElementById('sGia').textContent = gias.length ? `${Math.min(...gias).toFixed(1)}–${Math.max(...gias).toFixed(1)}` : '-';
-      document.getElementById('sDt').textContent = dts.length ? `${Math.min(...dts)}–${Math.max(...dts)}` : '-';
+      document.getElementById('sGia').textContent  = gias.length  ? `${Math.min(...gias).toFixed(1)}–${Math.max(...gias).toFixed(1)}` : '-';
+      document.getElementById('sDt').textContent   = dts.length   ? `${Math.min(...dts)}–${Math.max(...dts)}` : '-';
       document.getElementById('sQuan').textContent = quans || '-';
       document.getElementById('totalBadge').textContent = `${arr.length} BĐS`;
     }
@@ -1067,101 +1107,76 @@
 
     // ── Build ward tabs dynamically ──
     function buildWardTabs() {
-      let pool = DATA;
-      if (curFilter !== 'all' && curFilter !== 'ngon' && curFilter !== 'loi') {
-        pool = DATA.filter(p => p.q === curFilter);
-      }
+      const pool = selDistricts.size ? DATA.filter(p => selDistricts.has(p.q)) : DATA;
       const wards = [...new Set(pool.map(p => p.phuong).filter(w => w && w !== '-'))].sort();
       const wt = document.getElementById('wardTabs');
       const wl = document.getElementById('wardLbl');
       if (!wards.length) { wt.classList.remove('has-wards'); wl.style.display = 'none'; return; }
       wl.style.display = 'block';
-      wt.innerHTML = `<button class="tab ${curWard==='all'?'on':''}" onclick="setWard('all',this)">Tất cả</button>`
-        + wards.map(w => `<button class="tab ${curWard===w?'on':''}" onclick="setWard('${w}',this)">${w}</button>`).join('');
+      wt.innerHTML = `<button class="tab ${selWards.size===0?'on':''}" data-val="all" onclick="tWard('all')">Tất cả</button>`
+        + wards.map(w => `<button class="tab ${selWards.has(w)?'on':''}" data-val="${w}" onclick="tWard('${w}')">${w}</button>`).join('');
       wt.classList.add('has-wards');
     }
 
-    // ── Build duong_truoc_nha tabs dynamically ──
+    // ── Build duong tabs dynamically ──
     function buildDuongTabs() {
-      let pool = DATA;
-      if (curFilter !== 'all' && curFilter !== 'ngon' && curFilter !== 'loi') pool = DATA.filter(p => p.q === curFilter);
-      if (curWard !== 'all') pool = pool.filter(p => p.phuong === curWard);
+      let pool = selDistricts.size ? DATA.filter(p => selDistricts.has(p.q)) : DATA;
+      if (selWards.size) pool = pool.filter(p => selWards.has(p.phuong));
       const duongs = [...new Set(pool.map(p => p.duong_truoc_nha).filter(d => d && d !== '-'))].sort();
       const dt = document.getElementById('duongTabs');
       const dl = document.getElementById('duongLbl');
       if (!duongs.length) { dt.classList.remove('has-duong'); dl.style.display = 'none'; return; }
       dl.style.display = 'block';
-      dt.innerHTML = `<button class="tab ${curDuong==='all'?'on':''}" onclick="setDuong('all',this)">Tất cả</button>`
-        + duongs.map(d => `<button class="tab ${curDuong===d?'on':''}" onclick="setDuong('${d}',this)">${d}</button>`).join('');
+      dt.innerHTML = `<button class="tab ${selDuongs.size===0?'on':''}" data-val="all" onclick="tDuong('all')">Tất cả</button>`
+        + duongs.map(d => `<button class="tab ${selDuongs.has(d)?'on':''}" data-val="${d}" onclick="tDuong('${d}')">${d}</button>`).join('');
       dt.classList.add('has-duong');
     }
 
-    function setWard(w, el) {
-      curWard = w;
-      curDuong = 'all'; // reset đường khi đổi phường
-      document.querySelectorAll('#wardTabs .tab').forEach(t => t.classList.remove('on'));
-      el.classList.add('on');
-      buildDuongTabs();
-      updateFilterSummary();
-      updateStats();
-      render(curFilter);
+    // ── Toggle functions (multi-select) ──
+    function tDistrict(val) {
+      tSel(selDistricts, val); syncTabUI('districtTabs', selDistricts);
+      selWards.clear(); selDuongs.clear();
+      buildWardTabs(); buildDuongTabs();
+      updateFilterSummary(); updateStats(); render();
     }
-
-    function setDuong(d, el) {
-      curDuong = d;
-      document.querySelectorAll('#duongTabs .tab').forEach(t => t.classList.remove('on'));
-      el.classList.add('on');
-      updateFilterSummary();
-      updateStats();
-      render(curFilter);
+    function tWard(val) {
+      tSel(selWards, val); syncTabUI('wardTabs', selWards);
+      selDuongs.clear(); buildDuongTabs();
+      updateFilterSummary(); updateStats(); render();
     }
-
-    function setGia(g, el) {
-      curGia = g;
-      document.querySelectorAll('#giaTabs .tab').forEach(t => t.classList.remove('on'));
-      el.classList.add('on');
-      updateFilterSummary();
-      updateStats();
-      render(curFilter);
+    function tDuong(val) {
+      tSel(selDuongs, val); syncTabUI('duongTabs', selDuongs);
+      updateFilterSummary(); updateStats(); render();
+    }
+    function tGia(val) {
+      tSel(selGia, val); syncTabUI('giaTabs', selGia);
+      updateFilterSummary(); updateStats(); render();
+    }
+    function tDanhGia(val) {
+      tSel(selDanhGia, val); syncTabUI('danhGiaTabs', selDanhGia);
+      updateFilterSummary(); updateStats(); render();
     }
 
     function updateFilterSummary() {
-      const names = {all:'Tất cả',q3:'Quận 3',pn:'Phú Nhuận',tb:'Tân Bình',bt:'Bình Thạnh',gv:'Gò Vấp',q10:'Quận 10',ngon:'💎 Ngon',loi:'⚠️ Lỗi'};
-      const giaLabels = {'lt7':'<7 tỷ','7-10':'7–10 tỷ','10-15':'10–15 tỷ','15-20':'15–20 tỷ','gt20':'>20 tỷ'};
-      let s = names[curFilter] || curFilter;
-      if (curWard !== 'all') s += ' · P.' + curWard;
-      if (curDuong !== 'all') s += ' · ' + curDuong;
-      if (curGia !== 'all') s += ' · ' + (giaLabels[curGia] || curGia);
-      document.getElementById('filterSummary').textContent = s;
-      const anyActive = curFilter !== 'all' || curWard !== 'all' || curDuong !== 'all' || curGia !== 'all' || filterOpen;
-      document.getElementById('filterBtn').classList.toggle('active', anyActive);
+      const dNames = {q3:'Q.3',q10:'Q.10',pn:'P.Nhuận',tb:'T.Bình',bt:'B.Thạnh',gv:'G.Vấp'};
+      const gNames = {'lt7':'<7t','7-10':'7-10t','10-15':'10-15t','15-20':'15-20t','gt20':'>20t'};
+      const parts = [];
+      if (selDistricts.size) parts.push([...selDistricts].map(d=>dNames[d]||d).join('+'));
+      if (selWards.size)     parts.push('P.'+[...selWards].join('+'));
+      if (selDuongs.size)    parts.push([...selDuongs].join('+'));
+      if (selGia.size)       parts.push([...selGia].map(g=>gNames[g]||g).join('+'));
+      if (selDanhGia.size)   parts.push([...selDanhGia].map(d=>d==='Hàng Ngon'?'💎':'⚠️').join(''));
+      document.getElementById('filterSummary').textContent = parts.length ? parts.join(' · ') : 'Tất cả';
+      const anyActive = selDistricts.size||selWards.size||selDuongs.size||selGia.size||selDanhGia.size||filterOpen;
+      document.getElementById('filterBtn').classList.toggle('active', !!anyActive);
     }
 
-    function render(f) {
+    function render() {
       const list = document.getElementById('list');
       const lbl = list.querySelector('.sec-lbl');
       list.innerHTML = '';
       if (lbl) list.appendChild(lbl);
-
-      let arr = (f === 'all') ? DATA : DATA.filter(p => {
-        if (f === 'ngon') return p.danh_gia === 'Hàng Ngon';
-        if (f === 'loi') return p.danh_gia === 'Hàng Lỗi';
-        return p.q === f;
-      });
-      // Áp dụng filter phường
-      if (curWard !== 'all') arr = arr.filter(p => p.phuong === curWard);
-      // Áp dụng filter đường trước nhà
-      if (curDuong !== 'all') arr = arr.filter(p => p.duong_truoc_nha === curDuong);
-      // Áp dụng filter khoảng giá
-      if (curGia !== 'all') arr = arr.filter(p => {
-        const g = parseFloat(p.gia) || 0;
-        if (curGia === 'lt7')   return g < 7;
-        if (curGia === '7-10')  return g >= 7 && g <= 10;
-        if (curGia === '10-15') return g > 10 && g <= 15;
-        if (curGia === '15-20') return g > 15 && g <= 20;
-        if (curGia === 'gt20')  return g > 20;
-        return true;
-      });
+      const arr = getFiltered();
 
       if (!arr.length) {
         list.insertAdjacentHTML('beforeend', '<div style="text-align:center;padding:60px 20px;color:var(--sub);font-weight:500;">Vui lòng liên hệ Khang Ngô Nhà Phố để được cung cấp thông tin.</div>');
@@ -1205,18 +1220,7 @@
       });
     }
 
-    function setF(f, el) {
-      curFilter = f;
-      curWard = 'all';
-      curDuong = 'all';
-      document.querySelectorAll('#districtTabs .tab').forEach(t => t.classList.remove('on'));
-      el.classList.add('on');
-      buildWardTabs();
-      buildDuongTabs();
-      updateFilterSummary();
-      updateStats();
-      render(f);
-    }
+
 
     function th(b) { b.classList.toggle('on'); b.textContent = b.classList.contains('on') ? '♥' : '♡'; }
 
