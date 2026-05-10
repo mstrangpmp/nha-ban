@@ -1148,7 +1148,7 @@
         });
       });
     }
-    function onSearchInput() { updateStats(); render(); }
+    function onSearchInput() { updateStats(); applyFilter(); }
 
     function getFiltered() {
       let a = DATA;
@@ -1329,24 +1329,24 @@
       tSel(selDistricts, val); syncTabUI('districtTabs', selDistricts);
       selWards.clear(); selDuongs.clear();
       buildWardTabs(); buildDuongTabs();
-      updateFilterSummary(); updateStats(); render();
+      updateFilterSummary(); updateStats(); applyFilter();
     }
     function tWard(val) {
       tSel(selWards, val); syncTabUI('wardTabs', selWards);
       selDuongs.clear(); buildDuongTabs();
-      updateFilterSummary(); updateStats(); render();
+      updateFilterSummary(); updateStats(); applyFilter();
     }
     function tDuong(val) {
       tSel(selDuongs, val); syncTabUI('duongTabs', selDuongs);
-      updateFilterSummary(); updateStats(); render();
+      updateFilterSummary(); updateStats(); applyFilter();
     }
     function tGia(val) {
       tSel(selGia, val); syncTabUI('giaTabs', selGia);
-      updateFilterSummary(); updateStats(); render();
+      updateFilterSummary(); updateStats(); applyFilter();
     }
     function tDanhGia(val) {
       tSel(selDanhGia, val); syncTabUI('danhGiaTabs', selDanhGia);
-      updateFilterSummary(); updateStats(); render();
+      updateFilterSummary(); updateStats(); applyFilter();
     }
 
     function updateFilterSummary() {
@@ -1371,7 +1371,7 @@
       syncTabUI('danhGiaTabs', selDanhGia);
       // Ward & Duong tabs cần rebuild vì là dynamic
       buildWardTabs(); buildDuongTabs();
-      updateFilterSummary(); updateStats(); render();
+      updateFilterSummary(); updateStats(); applyFilter();
     }
 
     function toggleSort() {
@@ -1390,7 +1390,7 @@
     function toggleFavFilter() {
       showFavOnly = !showFavOnly;
       updateFavBtnUI();
-      updateStats(); render();
+      updateStats(); applyFilter();
     }
 
     function render() {
@@ -1410,12 +1410,11 @@
 
       const frag = document.createDocumentFragment();
       arr.forEach((p, i) => {
-        // Tìm ảnh đầu tiên không phải là video để làm thumbnail ngoài trang chủ
         const imgUrls = p.imgs.filter(u => !u.includes('facebook.com') && !u.includes('fb.watch') && !u.includes('fb.gg'));
         const thumb = imgUrls[0] ? fixImgUrl(imgUrls[0], 'w400') : 'https://via.placeholder.com/300x200?text=No+Photo';
         const c = document.createElement('div');
         c.className = 'card';
-        c.style.animationDelay = (i * .04) + 's';
+        c.dataset.pid = String(p.id);
         c.innerHTML = `
       ${isAdmin ? `<input type="checkbox" class="card-sel" onchange="toggleSelect('${p.id}', this)" ${SELECTED_IDS.has(String(p.id)) ? 'checked' : ''}>` : ''}
       <div class="crow" onclick="openS('${p.id}')">
@@ -1448,6 +1447,31 @@
         frag.appendChild(c);
       });
       list.appendChild(frag);
+    }
+
+    // Lọc nhanh bằng ẩn/hiện card (không tạo lại DOM)
+    function applyFilter() {
+      const filteredIds = new Set(getFiltered().map(p => String(p.id)));
+      const cards = document.querySelectorAll('#list .card');
+      let visibleCount = 0;
+      cards.forEach(c => {
+        const show = filteredIds.has(c.dataset.pid);
+        c.style.display = show ? '' : 'none';
+        if (show) visibleCount++;
+      });
+      // Hiện thông báo nếu không có kết quả
+      let noResult = document.getElementById('noResultMsg');
+      if (!visibleCount) {
+        if (!noResult) {
+          const d = document.createElement('div');
+          d.id = 'noResultMsg';
+          d.style.cssText = 'text-align:center;padding:60px 20px;color:var(--sub);font-weight:500;';
+          d.textContent = 'Không tìm thấy căn nào phù hợp.';
+          document.getElementById('list').appendChild(d);
+        }
+      } else if (noResult) {
+        noResult.remove();
+      }
     }
 
 
