@@ -198,6 +198,41 @@
       border-color: #fff;
     }
 
+    .search-bar {
+      position: relative;
+      margin-bottom: 12px;
+    }
+    .search-bar input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 14px 10px 36px;
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 20px;
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .search-bar input::placeholder {
+      color: rgba(255,255,255,0.7);
+    }
+    .search-bar input:focus {
+      background: rgba(255,255,255,0.25);
+      border-color: rgba(255,255,255,0.5);
+    }
+    .search-bar .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: rgba(255,255,255,0.8);
+      pointer-events: none;
+    }
+
     .tabs {
       display: flex;
       gap: 8px;
@@ -875,6 +910,10 @@
         <span class="badge" id="totalBadge">... BĐS</span>
       </div>
     </div>
+    <div class="search-bar">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="Tìm mã căn, đường, tiêu đề..." onkeyup="onSearchInput()">
+    </div>
     <!-- Admin: nút mở bộ lọc -->
     <div class="filter-bar">
       <button class="filter-btn" id="filterBtn" onclick="toggleFilter()">🎚 Bộ lọc</button>
@@ -1042,8 +1081,19 @@
         });
       });
     }
+    function onSearchInput() { updateStats(); render(); }
+
     function getFiltered() {
       let a = DATA;
+      const sv = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+      if (sv) {
+        a = a.filter(p => 
+          String(p.id).toLowerCase().includes(sv) ||
+          p.t.toLowerCase().includes(sv) ||
+          p.duong_truoc_nha.toLowerCase().includes(sv) ||
+          p.phuong.toLowerCase().includes(sv)
+        );
+      }
       if (showFavOnly) a = a.filter(p => favs.has(String(p.id)));
       if (selDistricts.size) a = a.filter(p => selDistricts.has(p.q));
       if (selWards.size)     a = a.filter(p => selWards.has(p.phuong));
