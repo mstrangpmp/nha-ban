@@ -1292,8 +1292,9 @@
       }
 
       arr.forEach((p, i) => {
-        // Chỉ load ảnh nhỏ w400 cho danh sách ngoài
-        const thumb = p.imgs[0] ? fixImgUrl(p.imgs[0], 'w400') : 'https://via.placeholder.com/300x200?text=No+Photo';
+        // Tìm ảnh đầu tiên không phải là video để làm thumbnail ngoài trang chủ
+        const imgUrls = p.imgs.filter(u => !u.includes('facebook.com') && !u.includes('fb.watch') && !u.includes('fb.gg'));
+        const thumb = imgUrls[0] ? fixImgUrl(imgUrls[0], 'w400') : 'https://via.placeholder.com/300x200?text=No+Photo';
         const c = document.createElement('div');
         c.className = 'card';
         c.style.animationDelay = (i * .04) + 's';
@@ -1408,8 +1409,14 @@
       if (!p) return;
       document.getElementById('mT').textContent = p.t;
       document.getElementById('mID').textContent = `#${p.id}`;
+      // Ưu tiên video luôn lên đầu mảng trong gallery chi tiết
+      const sortedImgs = [...p.imgs].sort((a, b) => {
+        const aVis = (a.includes('facebook.com') || a.includes('fb.watch') || a.includes('fb.gg')) ? 1 : 0;
+        const bVis = (b.includes('facebook.com') || b.includes('fb.watch') || b.includes('fb.gg')) ? 1 : 0;
+        return bVis - aVis;
+      });
       // Load ảnh lớn w1200 cho album chi tiết
-      buildG(p.imgs.map(url => fixImgUrl(url, 'w1200')));
+      buildG(sortedImgs.map(url => fixImgUrl(url, 'w1200')));
       document.getElementById('mG').innerHTML = `
     <div class="ib"><div class="il">Giá bán</div><div class="iv hi">${p.gia} tỷ</div></div>
     <div class="ib"><div class="il">Diện tích</div><div class="iv">${p.dt} m²</div></div>
