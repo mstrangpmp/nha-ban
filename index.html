@@ -1461,7 +1461,7 @@
           <div class="ititle">${p.t}</div>
           <div class="chips">
             <span class="chip">📐 ${p.dt}m²</span>
-            <span class="chip">🏠 ${p.tang} tầng</span>
+            <span class="chip">🏠 ${p.tang} tầng</span>${p.danh_gia === 'Hàng Ngon' ? '<span class="chip" style="color:#27ae60;font-size:14px;padding:2px 4px;">▶</span>' : p.danh_gia === 'Hàng Lỗi' ? '<span class="chip" style="color:var(--red);font-size:13px;padding:2px 4px;">⏸</span>' : ''}
             <span class="chip">🛣️ ${p.duong_truoc_nha}</span>
           </div>
           <div class="pr"><span class="pv">${p.gia} tỷ</span><span class="pu">VND</span></div>
