@@ -1080,8 +1080,8 @@
                 tang: cv(r.c[3]),
                 mat: cv(r.c[4]),
                 gia: cv(r.c[5]),
-                q: String(cv(r.c[6])).trim().toLowerCase(),
-                ql: cv(r.c[7]),
+                q: (isNaN(String(cv(r.c[6])).trim()) ? String(cv(r.c[6])).trim().toLowerCase() : 'q' + String(cv(r.c[6])).trim()),
+                ql: String(cv(r.c[6])).trim().toUpperCase(),
                 phuong: cv(r.c[8]) || '-', // I (MỚI)
                 loai_hinh: cv(r.c[9]) || 'Hẻm', // J
                 huong: cv(r.c[10]) || '-', // K
