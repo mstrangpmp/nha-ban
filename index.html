@@ -450,6 +450,12 @@
       opacity: 0.7;
     }
 
+    .id-large {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--sub);
+    }
+
     /* Nhãn đánh giá hàng */
     .tag-ngon { background: #27ae60; color: #fff; }
     .tag-loi { background: #7f8c8d; color: #fff; }
@@ -1291,13 +1297,15 @@
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
               P.${p.phuong}, Q.${p.ql}
             </div>
-            <div class="mid-sub">#${p.id}</div>
           </div>
         </div>
       </div>
       <div class="cfoot">
-        <button class="bsee" onclick="openS('${p.id}')">Xem chi tiết</button>
-        <button class="heart ${favs.has(String(p.id)) ? 'on' : ''}" onclick="th('${p.id}', this, event)">${favs.has(String(p.id)) ? '♥' : '♡'}</button>
+        <div class="id-large">#${p.id}</div>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button class="bsee" onclick="openS('${p.id}')">Xem chi tiết</button>
+          <button class="heart ${favs.has(String(p.id)) ? 'on' : ''}" onclick="th('${p.id}', this, event)">${favs.has(String(p.id)) ? '♥' : '♡'}</button>
+        </div>
       </div>`;
         list.appendChild(c);
       });
