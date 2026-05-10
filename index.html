@@ -174,6 +174,23 @@
       border-radius: 20px
     }
 
+    .fav-filter-btn {
+      background: rgba(255,255,255,.18);
+      color: rgba(255,255,255,.9);
+      border: 1.5px solid rgba(255,255,255,.3);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 13px; font-weight: 700;
+      cursor: pointer; white-space: nowrap;
+      font-family: inherit;
+      transition: background .15s;
+    }
+    .fav-filter-btn.active {
+      background: #fff;
+      color: var(--red);
+      border-color: #fff;
+    }
+
     .tabs {
       display: flex;
       gap: 8px;
@@ -829,7 +846,10 @@
   <header>
     <div class="hdr-top">
       <h1>🏠 Khang Ngô Nhà Phố</h1>
-      <span class="badge" id="totalBadge">... BĐS</span>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="fav-filter-btn" id="favFilterBtn" onclick="toggleFavFilter()">♡ Đã lưu</button>
+        <span class="badge" id="totalBadge">... BĐS</span>
+      </div>
     </div>
     <!-- Admin: nút mở bộ lọc -->
     <div class="filter-bar">
@@ -970,6 +990,8 @@
     const selDanhGia  = new Set();
     let filterOpen = false;
     let currentSort = 'desc'; // 'desc' = cao→thấp, 'asc' = thấp→cao
+    let showFavOnly = false;
+    let favs = new Set(JSON.parse(localStorage.getItem('favs') || '[]'));
 
     // ── Multi-select helper ──
     function tSel(set, val) {
@@ -998,6 +1020,7 @@
     }
     function getFiltered() {
       let a = DATA;
+      if (showFavOnly) a = a.filter(p => favs.has(String(p.id)));
       if (selDistricts.size) a = a.filter(p => selDistricts.has(p.q));
       if (selWards.size)     a = a.filter(p => selWards.has(p.phuong));
       if (selDuongs.size)    a = a.filter(p => selDuongs.has(p.duong_truoc_nha));
@@ -1215,6 +1238,14 @@
       render();
     }
 
+    function toggleFavFilter() {
+      showFavOnly = !showFavOnly;
+      const btn = document.getElementById('favFilterBtn');
+      btn.classList.toggle('active', showFavOnly);
+      btn.innerHTML = showFavOnly ? '♥ Đã lưu' : '♡ Đã lưu';
+      updateStats(); render();
+    }
+
     function render() {
       const list = document.getElementById('list');
       const lbl = list.querySelector('.sec-lbl');
@@ -1261,7 +1292,7 @@
       </div>
       <div class="cfoot">
         <button class="bsee" onclick="openS('${p.id}')">Xem chi tiết</button>
-        <button class="heart" onclick="th(this)">♡</button>
+        <button class="heart ${favs.has(String(p.id)) ? 'on' : ''}" onclick="th('${p.id}', this, event)">${favs.has(String(p.id)) ? '♥' : '♡'}</button>
       </div>`;
         list.appendChild(c);
       });
@@ -1269,7 +1300,21 @@
 
 
 
-    function th(b) { b.classList.toggle('on'); b.textContent = b.classList.contains('on') ? '♥' : '♡'; }
+    function th(id, b, e) {
+      if (e) e.stopPropagation();
+      const sid = String(id);
+      if (favs.has(sid)) {
+        favs.delete(sid);
+        b.classList.remove('on');
+        b.textContent = '♡';
+      } else {
+        favs.add(sid);
+        b.classList.add('on');
+        b.textContent = '♥';
+      }
+      localStorage.setItem('favs', JSON.stringify([...favs]));
+      if (showFavOnly) { updateStats(); render(); }
+    }
 
     // ── Gallery ──
     let gI = 0, gN = 0, tx = 0;
