@@ -1655,37 +1655,36 @@
     }
 
     function generateShareLink() {
-      if (SELECTED_IDS.size === 0) {
-        alert('Vui lòng chọn ít nhất 1 căn nhà!');
-        return;
-      }
-      const ids = Array.from(SELECTED_IDS);
-      // Nén: dùng dấu phẩy thay vì JSON array để giảm kích thước
-      const token = btoa(ids.join(','));
-      const baseUrl = window.location.origin + window.location.pathname;
-      const shareUrl = `${baseUrl}?s=${token}`;
+      try {
+        if (SELECTED_IDS.size === 0) {
+          alert('Vui lòng chọn ít nhất 1 căn nhà!');
+          return;
+        }
+        const ids = Array.from(SELECTED_IDS);
+        const token = btoa(ids.join(','));
+        const baseUrl = window.location.origin + window.location.pathname;
+        const shareUrl = `${baseUrl}?s=${token}`;
 
-      // Fallback copy cho iOS Safari
-      function fallbackCopy(text) {
+        // Dùng Web Share API trên điện thoại (native share sheet)
+        if (navigator.share) {
+          navigator.share({
+            title: 'Khang Ngô Nhà Phố - ' + ids.length + ' căn',
+            url: shareUrl
+          }).catch(() => {});
+          return;
+        }
+
+        // Desktop: copy bằng execCommand (đồng bộ, không bị treo)
         const ta = document.createElement('textarea');
-        ta.value = text;
-        ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+        ta.value = shareUrl;
+        ta.style.cssText = 'position:fixed;left:0;top:0;opacity:0;';
         document.body.appendChild(ta);
         ta.focus(); ta.select();
-        try { document.execCommand('copy'); } catch(e) {}
+        document.execCommand('copy');
         document.body.removeChild(ta);
-      }
-
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(shareUrl).then(() => {
-          alert('Đã copy link gửi khách!\n(' + ids.length + ' căn)\n\nDán link này vào Zalo để gửi cho khách nhé.');
-        }).catch(() => {
-          fallbackCopy(shareUrl);
-          alert('Đã copy link gửi khách!\n(' + ids.length + ' căn)\n\nDán link này vào Zalo để gửi cho khách nhé.');
-        });
-      } else {
-        fallbackCopy(shareUrl);
         alert('Đã copy link gửi khách!\n(' + ids.length + ' căn)\n\nDán link này vào Zalo để gửi cho khách nhé.');
+      } catch(e) {
+        alert('Có lỗi xảy ra: ' + e.message);
       }
     }
 
