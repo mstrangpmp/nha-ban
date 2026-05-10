@@ -1087,12 +1087,18 @@
     const shareToken = urlParams.get('s');
     if (isAdmin) document.body.classList.add('is-admin');
     
-    // Logic chia sẻ mới: chỉ lưu danh sách ID
+    // Logic chia sẻ: hỗ trợ cả format mới (dấu phẩy) và cũ (JSON array)
     let sharedIds = null;
     if (shareToken) {
       try {
-        sharedIds = JSON.parse(atob(shareToken));
-        if (!Array.isArray(sharedIds)) sharedIds = null;
+        const decoded = atob(shareToken);
+        // Thử JSON trước (format cũ), nếu lỗi thì dùng dấu phẩy (format mới)
+        try {
+          const parsed = JSON.parse(decoded);
+          if (Array.isArray(parsed)) sharedIds = parsed;
+        } catch(_) {
+          sharedIds = decoded.split(',').filter(Boolean);
+        }
       } catch (e) { console.error("Lỗi giải mã share token", e); }
     }
 
@@ -1402,6 +1408,7 @@
         return;
       }
 
+      const frag = document.createDocumentFragment();
       arr.forEach((p, i) => {
         // Tìm ảnh đầu tiên không phải là video để làm thumbnail ngoài trang chủ
         const imgUrls = p.imgs.filter(u => !u.includes('facebook.com') && !u.includes('fb.watch') && !u.includes('fb.gg'));
@@ -1438,8 +1445,9 @@
           <button class="heart ${favs.has(String(p.id)) ? 'on' : ''}" onclick="th('${p.id}', this, event)">${favs.has(String(p.id)) ? '♥' : '♡'}</button>
         </div>
       </div>`;
-        list.appendChild(c);
+        frag.appendChild(c);
       });
+      list.appendChild(frag);
     }
 
 
@@ -1618,14 +1626,33 @@
         return;
       }
       const ids = Array.from(SELECTED_IDS);
-      const token = btoa(JSON.stringify(ids)); // Mã hóa danh sách ID
+      // Nén: dùng dấu phẩy thay vì JSON array để giảm kích thước
+      const token = btoa(ids.join(','));
       const baseUrl = window.location.origin + window.location.pathname;
       const shareUrl = `${baseUrl}?s=${token}`;
-      
-      // Copy vào clipboard
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        alert('Đã tạo và copy link gửi khách thành công!\n\nKhách sẽ chỉ xem được ' + ids.length + ' căn bạn đã chọn.');
-      });
+
+      // Fallback copy cho iOS Safari
+      function fallbackCopy(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+        document.body.appendChild(ta);
+        ta.focus(); ta.select();
+        try { document.execCommand('copy'); } catch(e) {}
+        document.body.removeChild(ta);
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          alert('Đã copy link gửi khách!\n(' + ids.length + ' căn)\n\nDán link này vào Zalo để gửi cho khách nhé.');
+        }).catch(() => {
+          fallbackCopy(shareUrl);
+          alert('Đã copy link gửi khách!\n(' + ids.length + ' căn)\n\nDán link này vào Zalo để gửi cho khách nhé.');
+        });
+      } else {
+        fallbackCopy(shareUrl);
+        alert('Đã copy link gửi khách!\n(' + ids.length + ' căn)\n\nDán link này vào Zalo để gửi cho khách nhé.');
+      }
     }
 
     // Thêm nút tạo link nếu là admin
