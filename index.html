@@ -330,20 +330,35 @@
 
     /* Responsive cho máy tính */
     @media (min-width: 768px) {
-      main { max-width: 1100px; }
+      main { max-width: 1100px; padding: 20px 24px calc(72px + var(--safe-bot)); }
       #list { 
         display: grid; 
         grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); 
         gap: 16px; 
-        padding-top: 20px;
+        padding-top: 10px;
       }
-      .card { margin-bottom: 0; } /* Grid đã có gap */
+      /* Label chiếm full hàng, không khuyết ô đầu */
+      #list .sec-lbl { grid-column: 1 / -1; }
+      /* Thông báo trống cũng chiếm full */
+      #list > div[style*="text-align:center"] { grid-column: 1 / -1; }
+      #noResultMsg { grid-column: 1 / -1; }
+
+      .card { margin-bottom: 0; transition: transform 0.2s, box-shadow 0.2s; }
+      .card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,.12); }
       
-      /* Căn chỉnh header và stats */
-      header .hdr-top, .tabs { max-width: 1100px; margin-left: auto; margin-right: auto; }
+      /* Ảnh lớn hơn trên desktop */
+      .ibox { width: 140px; min-width: 140px; height: 145px; }
+      
+      /* Căn chỉnh header */
+      header { padding-left: max(16px, calc((100vw - 1100px) / 2)); padding-right: max(16px, calc((100vw - 1100px) / 2)); }
+      
+      /* Căn chỉnh stats */
       .stats { justify-content: center; padding: 10px 0; }
       .stat { flex: 0 1 180px; border-right: 1px solid var(--border); }
       
+      /* Footer hành động */
+      .sfoot { max-width: 1100px; margin: 0 auto; border-radius: 16px 16px 0 0; }
+
       /* Biến Bottom Sheet thành Modal giữa màn hình */
       .overlay { align-items: center; padding: 20px; }
       .sheet { 
@@ -360,6 +375,11 @@
       .gwrap { margin-bottom: 0; height: 100%; aspect-ratio: unset; min-height: 400px; }
       .gslide img { height: 100%; }
       .ig { margin-bottom: 0; }
+      
+      /* Lightbox nút mũi tên lớn hơn */
+      .garr { width: 48px; height: 48px; font-size: 24px; }
+      .lb-thumbs { height: 90px; gap: 12px; padding: 12px 20px; }
+      .lb-thumb, .lb-thumb-vid { width: 72px; }
     }
 
     .sec-lbl {
