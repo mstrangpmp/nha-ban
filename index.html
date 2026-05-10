@@ -1238,11 +1238,16 @@
       render();
     }
 
+    function updateFavBtnUI() {
+      const btn = document.getElementById('favFilterBtn');
+      if (!btn) return;
+      btn.classList.toggle('active', showFavOnly);
+      btn.innerHTML = (showFavOnly ? '♥' : '♡') + ' Đã lưu (' + favs.size + ')';
+    }
+
     function toggleFavFilter() {
       showFavOnly = !showFavOnly;
-      const btn = document.getElementById('favFilterBtn');
-      btn.classList.toggle('active', showFavOnly);
-      btn.innerHTML = showFavOnly ? '♥ Đã lưu' : '♡ Đã lưu';
+      updateFavBtnUI();
       updateStats(); render();
     }
 
@@ -1313,6 +1318,7 @@
         b.textContent = '♥';
       }
       localStorage.setItem('favs', JSON.stringify([...favs]));
+      updateFavBtnUI();
       if (showFavOnly) { updateStats(); render(); }
     }
 
@@ -1452,6 +1458,7 @@
     }
 
     // Khởi động
+    updateFavBtnUI();
     loadData();
   </script>
 </body>
