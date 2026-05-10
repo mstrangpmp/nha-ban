@@ -77,31 +77,18 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;
     }
 
-    /* ── Sort bar (visible to all) ── */
-    .sort-bar-all {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 4px 0 12px;
-    }
-    .sort-lbl {
-      color: rgba(255,255,255,.65);
-      font-size: 12px; font-weight: 700;
-      flex-shrink: 0; white-space: nowrap;
-    }
-    .sort-btn {
+    /* ── Sort icon btn ── */
+    .sort-icon-btn {
       background: rgba(255,255,255,.15);
-      color: rgba(255,255,255,.9);
-      border: 1.5px solid rgba(255,255,255,.3);
-      border-radius: 20px;
-      padding: 5px 14px;
-      font-size: 13px; font-weight: 600;
-      cursor: pointer; white-space: nowrap;
-      font-family: inherit; min-height: 36px;
-      transition: background .15s, color .15s;
+      color: #fff;
+      border: 1.5px solid rgba(255,255,255,.4);
+      border-radius: 50%;
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; cursor: pointer; flex-shrink: 0;
+      transition: background .15s;
     }
-    .sort-btn.active { background: #fff; color: var(--red); border-color: #fff; }
-    .sort-btn:not(.active):hover { background: rgba(255,255,255,.28); }
+    .sort-icon-btn:hover { background: rgba(255,255,255,.28); }
 
     /* ── Collapsible filter panel ── */
     .filter-panel {
@@ -844,16 +831,11 @@
       <h1>🏠 Khang Ngô Nhà Phố</h1>
       <span class="badge" id="totalBadge">... BĐS</span>
     </div>
-    <!-- Sort bar: visible to all users -->
-    <div class="sort-bar-all">
-      <span class="sort-lbl">💰 Giá:</span>
-      <button class="sort-btn active" id="sortDesc" onclick="setSort('desc')">⬇ Cao → Thấp</button>
-      <button class="sort-btn" id="sortAsc" onclick="setSort('asc')">⬆ Thấp → Cao</button>
-    </div>
     <!-- Admin: nút mở bộ lọc -->
     <div class="filter-bar">
       <button class="filter-btn" id="filterBtn" onclick="toggleFilter()">🎚 Bộ lọc</button>
       <span class="filter-summary" id="filterSummary">Tất cả</span>
+      <button class="sort-icon-btn" id="sortToggleBtn" onclick="toggleSort()" title="Sắp xếp Giá">⬇</button>
       <button class="reset-btn" id="resetBtn" onclick="resetFilters()" style="display:none">↺ Xóa lọc</button>
     </div>
     <!-- Collapsible panel -->
@@ -1227,10 +1209,9 @@
       updateFilterSummary(); updateStats(); render();
     }
 
-    function setSort(dir) {
-      currentSort = dir;
-      document.getElementById('sortDesc').classList.toggle('active', dir === 'desc');
-      document.getElementById('sortAsc').classList.toggle('active', dir === 'asc');
+    function toggleSort() {
+      currentSort = currentSort === 'desc' ? 'asc' : 'desc';
+      document.getElementById('sortToggleBtn').textContent = currentSort === 'desc' ? '⬇' : '⬆';
       render();
     }
 
