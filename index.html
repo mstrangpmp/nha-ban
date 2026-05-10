@@ -1097,19 +1097,23 @@
     const shareToken = urlParams.get('s');
     if (isAdmin) document.body.classList.add('is-admin');
     
-    // Logic chia sẻ: hỗ trợ cả format mới (dấu phẩy) và cũ (JSON array)
+    // Logic chia sẻ: giải mã danh sách ID từ URL
     let sharedIds = null;
     if (shareToken) {
       try {
-        const decoded = atob(shareToken);
-        // Thử JSON trước (format cũ), nếu lỗi thì dùng dấu phẩy (format mới)
-        try {
+        // Format mới: danh sách ID phân cách bằng dấu phẩy (không cần base64)
+        if (shareToken.includes(',') || !shareToken.includes('[')) {
+          sharedIds = shareToken.split(',').map(s => s.trim()).filter(Boolean);
+        } else {
+          // Format cũ (base64 JSON) - backward compatible
+          const decoded = atob(shareToken);
           const parsed = JSON.parse(decoded);
           if (Array.isArray(parsed)) sharedIds = parsed;
-        } catch(_) {
-          sharedIds = decoded.split(',').filter(Boolean);
         }
-      } catch (e) { console.error("Lỗi giải mã share token", e); }
+      } catch (e) {
+        // Nếu atob lỗi, thử split trực tiếp
+        sharedIds = shareToken.split(',').map(s => s.trim()).filter(Boolean);
+      }
     }
 
     //  ⚙️  CẤU HÌNH 
@@ -1661,9 +1665,8 @@
           return;
         }
         const ids = Array.from(SELECTED_IDS);
-        const token = btoa(ids.join(','));
         const baseUrl = window.location.origin + window.location.pathname;
-        const shareUrl = `${baseUrl}?s=${token}`;
+        const shareUrl = `${baseUrl}?s=${ids.join(',')}`;
 
         // Dùng Web Share API trên điện thoại (native share sheet)
         if (navigator.share) {
