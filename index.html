@@ -1073,6 +1073,7 @@
               const dt = parseFloat(cv(r.c[2])) || 0;
               const gia = parseFloat(cv(r.c[5])) || 0;
               const giabq = (dt > 0 && gia > 0) ? Math.round((gia * 1000) / dt) : 0; // Giá tỷ -> quy ra triệu/m2
+              const cleanQ = String(cv(r.c[6])).replace(/^(Quận|Q)\.?\s*/i, '').trim();
               return {
                 id: cv(r.c[0]),
                 t: cv(r.c[1]),
@@ -1080,8 +1081,8 @@
                 tang: cv(r.c[3]),
                 mat: cv(r.c[4]),
                 gia: cv(r.c[5]),
-                q: (isNaN(String(cv(r.c[6])).trim()) ? String(cv(r.c[6])).trim().toLowerCase() : 'q' + String(cv(r.c[6])).trim()),
-                ql: String(cv(r.c[6])).trim().toUpperCase(),
+                q: (isNaN(cleanQ) || cleanQ === '') ? cleanQ.toLowerCase() : 'q' + cleanQ,
+                ql: cleanQ.toUpperCase(),
                 phuong: cv(r.c[8]) || '-', // I (MỚI)
                 loai_hinh: cv(r.c[9]) || 'Hẻm', // J
                 huong: cv(r.c[10]) || '-', // K
