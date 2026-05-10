@@ -159,10 +159,17 @@
     }
 
     .hdr-top h1 {
-      font-size: 20px;
+      font-size: 15px;
       font-weight: 800;
       color: #fff;
-      letter-spacing: -0.3px
+      letter-spacing: -0.3px;
+      line-height: 1.2;
+      margin: 0;
+    }
+    .hdr-top h1 span {
+      font-size: 12px;
+      font-weight: 500;
+      opacity: 0.9;
     }
 
     .badge {
@@ -855,7 +862,10 @@
 
   <header>
     <div class="hdr-top">
-      <h1>🏠 Khang Ngô Nhà Phố</h1>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="./avatarKhangNgo.jpg" alt="Khang Ngô" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #fff;">
+        <h1>Khang Ngô<br><span>Nhà Phố</span></h1>
+      </div>
       <div style="display:flex; gap:8px; align-items:center;">
         <button class="fav-filter-btn" id="favFilterBtn" onclick="toggleFavFilter()">♡ Đã lưu</button>
         <span class="badge" id="totalBadge">... BĐS</span>
