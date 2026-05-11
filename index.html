@@ -32,6 +32,8 @@
     body.is-admin #wardTabs.has-wards { display: flex !important; }
     #duongTabs { display: none !important; }
     body.is-admin #duongTabs.has-duong { display: flex !important; }
+    #huongTabs { display: none !important; }
+    body.is-admin #huongTabs.has-huong { display: flex !important; }
 
     body:not(.is-admin) header { padding-bottom: 0; }
 
@@ -97,7 +99,7 @@
       transition: max-height .32s cubic-bezier(.4,0,.2,1);
     }
     body.is-admin .filter-panel { display: block; }
-    .filter-panel.open { max-height: 520px; }
+    .filter-panel.open { max-height: 620px; }
 
     .filter-section-lbl {
       font-size: 10px; font-weight: 700;
@@ -1044,6 +1046,8 @@
         <button class="tab" data-val="15-20" onclick="tGia('15-20')">15–20 tỷ</button>
         <button class="tab" data-val="gt20" onclick="tGia('gt20')">Trên 20 tỷ</button>
       </div>
+      <div class="filter-section-lbl" id="huongLbl" style="display:none">Hướng nhà</div>
+      <div class="tabs" id="huongTabs"></div>
       <div class="filter-section-lbl">Đánh giá</div>
       <div class="tabs" id="danhGiaTabs">
         <button class="tab on" data-val="all" onclick="tDanhGia('all')">Tất cả</button>
@@ -1175,6 +1179,7 @@
     const selDistricts = new Set();
     const selWards    = new Set();
     const selDuongs   = new Set();
+    const selHuong    = new Set();
     const selGia      = new Set();
     const selDanhGia  = new Set();
     let filterOpen = false;
@@ -1224,6 +1229,7 @@
       if (selDistricts.size) a = a.filter(p => selDistricts.has(p.q));
       if (selWards.size)     a = a.filter(p => selWards.has(p.phuong));
       if (selDuongs.size)    a = a.filter(p => selDuongs.has(p.duong_truoc_nha));
+      if (selHuong.size)     a = a.filter(p => selHuong.has(p.huong));
       a = applyGia(a);
       if (selDanhGia.size)   a = a.filter(p => selDanhGia.has(p.danh_gia));
       return a;
@@ -1310,6 +1316,7 @@
 
           buildWardTabs();
           buildDuongTabs();
+          buildHuongTabs();
           updateStats();
           render();
         } catch (e) {
@@ -1365,7 +1372,7 @@
       document.getElementById('filterPanel').classList.remove('open');
       const btn = document.getElementById('filterBtn');
       btn.textContent = '🎚 Bộ lọc';
-      const anyActive = !!(selDistricts.size||selWards.size||selDuongs.size||selGia.size||selDanhGia.size);
+      const anyActive = !!(selDistricts.size||selWards.size||selDuongs.size||selHuong.size||selGia.size||selDanhGia.size);
       btn.classList.toggle('active', anyActive);
     }
 
@@ -1396,16 +1403,30 @@
       dt.classList.add('has-duong');
     }
 
+    // ── Build huong (direction) tabs dynamically ──
+    function buildHuongTabs() {
+      let pool = selDistricts.size ? DATA.filter(p => selDistricts.has(p.q)) : DATA;
+      if (selWards.size) pool = pool.filter(p => selWards.has(p.phuong));
+      const huongs = [...new Set(pool.map(p => p.huong).filter(h => h && h !== '-'))].sort();
+      const ht = document.getElementById('huongTabs');
+      const hl = document.getElementById('huongLbl');
+      if (!huongs.length) { ht.classList.remove('has-huong'); hl.style.display = 'none'; return; }
+      hl.style.display = 'block';
+      ht.innerHTML = `<button class="tab ${selHuong.size===0?'on':''}" data-val="all" onclick="tHuong('all')">Tất cả</button>`
+        + huongs.map(h => `<button class="tab ${selHuong.has(h)?'on':''}" data-val="${h}" onclick="tHuong('${h}')">${h}</button>`).join('');
+      ht.classList.add('has-huong');
+    }
+
     // ── Toggle functions (multi-select) ──
     function tDistrict(val) {
       tSel(selDistricts, val); syncTabUI('districtTabs', selDistricts);
-      selWards.clear(); selDuongs.clear();
-      buildWardTabs(); buildDuongTabs();
+      selWards.clear(); selDuongs.clear(); selHuong.clear();
+      buildWardTabs(); buildDuongTabs(); buildHuongTabs();
       updateFilterSummary(); updateStats(); applyFilter();
     }
     function tWard(val) {
       tSel(selWards, val); syncTabUI('wardTabs', selWards);
-      selDuongs.clear(); buildDuongTabs();
+      selDuongs.clear(); selHuong.clear(); buildDuongTabs(); buildHuongTabs();
       updateFilterSummary(); updateStats(); applyFilter();
     }
     function tDuong(val) {
@@ -1420,6 +1441,10 @@
       tSel(selDanhGia, val); syncTabUI('danhGiaTabs', selDanhGia);
       updateFilterSummary(); updateStats(); applyFilter();
     }
+    function tHuong(val) {
+      tSel(selHuong, val); syncTabUI('huongTabs', selHuong);
+      updateFilterSummary(); updateStats(); applyFilter();
+    }
 
     function updateFilterSummary() {
       const dNames = {q3:'Q.3',q10:'Q.10',pn:'P.Nhuận',tb:'T.Bình',bt:'B.Thạnh',gv:'G.Vấp'};
@@ -1428,21 +1453,22 @@
       if (selDistricts.size) parts.push([...selDistricts].map(d=>dNames[d]||d).join('+'));
       if (selWards.size)     parts.push('P.'+[...selWards].join('+'));
       if (selDuongs.size)    parts.push([...selDuongs].join('+'));
+      if (selHuong.size)     parts.push('🧭'+[...selHuong].join('+'));
       if (selGia.size)       parts.push([...selGia].map(g=>gNames[g]||g).join('+'));
       if (selDanhGia.size)   parts.push([...selDanhGia].map(d=>d==='Hàng Ngon'?'💎':'⚠️').join(''));
       document.getElementById('filterSummary').textContent = parts.length ? parts.join(' · ') : 'Tất cả';
-      const anyActive = !!(selDistricts.size||selWards.size||selDuongs.size||selGia.size||selDanhGia.size);
+      const anyActive = !!(selDistricts.size||selWards.size||selDuongs.size||selHuong.size||selGia.size||selDanhGia.size);
       document.getElementById('filterBtn').classList.toggle('active', anyActive || filterOpen);
       document.getElementById('resetBtn').style.display = anyActive ? 'inline-flex' : 'none';
     }
 
     function resetFilters() {
-      selDistricts.clear(); selWards.clear(); selDuongs.clear(); selGia.clear(); selDanhGia.clear();
+      selDistricts.clear(); selWards.clear(); selDuongs.clear(); selHuong.clear(); selGia.clear(); selDanhGia.clear();
       syncTabUI('districtTabs', selDistricts);
       syncTabUI('giaTabs', selGia);
       syncTabUI('danhGiaTabs', selDanhGia);
-      // Ward & Duong tabs cần rebuild vì là dynamic
-      buildWardTabs(); buildDuongTabs();
+      // Ward, Duong & Huong tabs cần rebuild vì là dynamic
+      buildWardTabs(); buildDuongTabs(); buildHuongTabs();
       updateFilterSummary(); updateStats(); applyFilter();
     }
 
