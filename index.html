@@ -1127,6 +1127,31 @@
     </div>
   </div>
 
+  <!-- Modal Tạo Link Gửi Khách -->
+  <div class="overlay" id="linkModal" onclick="if(event.target===this) this.classList.remove('open')">
+    <div class="sheet" style="padding:24px 20px; max-height:80vh; overflow-y:auto; border-radius: 20px 20px 0 0;">
+      <h3 style="margin-top:0; font-size:18px; color:var(--text); text-align:center;">🔗 Tạo Link Gửi Khách</h3>
+      <p style="font-size:14px; color:var(--sub); text-align:center; margin-bottom:20px;">Bạn đang tạo link cho <b id="linkModalCount" style="color:var(--gold)">0</b> căn nhà.</p>
+      
+      <div style="margin-bottom: 16px;">
+        <label style="font-size:14px; color:var(--sub); font-weight:600; display:block; margin-bottom:6px;">Tên khách hàng <span style="color:var(--red)">*</span></label>
+        <input type="text" id="linkCustName" style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:15px; outline:none;" placeholder="VD: Anh Hùng Quận 3">
+        <div style="font-size:12px; color:#888; margin-top:4px;">* Tên này sẽ hiển thị ở dòng chào mừng trên web.</div>
+      </div>
+      
+      <div style="margin-bottom: 24px;">
+        <label style="font-size:14px; color:var(--sub); font-weight:600; display:block; margin-bottom:6px;">Ghi chú nội bộ</label>
+        <input type="text" id="linkCustNote" style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:15px; outline:none;" placeholder="VD: Khách VIP tài chính 20 tỷ">
+        <div style="font-size:12px; color:#888; margin-top:4px;">* Chỉ dùng để phân loại trong File Tracking, ẩn với khách.</div>
+      </div>
+      
+      <div style="display:flex; gap:12px;">
+        <button onclick="document.getElementById('linkModal').classList.remove('open')" style="flex:1; padding:14px; border-radius:8px; border:1px solid #ddd; background:#f9f9f9; color:var(--sub); font-weight:700; font-size:15px;">Huỷ</button>
+        <button onclick="executeGenerateLink()" style="flex:1; padding:14px; border-radius:8px; border:none; background:#27ae60; color:#fff; font-weight:700; font-size:15px;">Tạo Link</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ============================================================
     //  ⚙️  KIỂM TRA QUYỀN TRUY CẬP & GIAI ĐOẠN 1 TRACKING
@@ -1903,16 +1928,27 @@
       }
     }
 
-    // Giai đoạn 1: Tạo Link kèm Tên Khách
+    // Giai đoạn 1: Tạo Link kèm Tên Khách (Hiển thị Form Modal)
     function promptGenerateLink() {
       if (SELECTED_IDS.size === 0) {
         alert('Vui lòng chọn ít nhất 1 căn nhà để tạo link!');
         return;
       }
-      const cName = prompt("Nhập TÊN KHÁCH HÀNG (Sẽ hiển thị trên Web lời chào):");
-      if (!cName) return; // Hủy nếu không nhập
+      document.getElementById('linkModalCount').textContent = SELECTED_IDS.size;
+      document.getElementById('linkCustName').value = '';
+      document.getElementById('linkCustNote').value = '';
+      document.getElementById('linkModal').classList.add('open');
+    }
 
-      const cNote = prompt("Nhập GHI CHÚ (Chỉ dùng lưu Log Tracking, khách không thấy):");
+    // Xử lý tạo link sau khi điền Form
+    function executeGenerateLink() {
+      const cName = document.getElementById('linkCustName').value.trim();
+      if (!cName) {
+        alert("Vui lòng nhập Tên khách hàng!");
+        return;
+      }
+      
+      const cNote = document.getElementById('linkCustNote').value.trim();
       const fullCustomerString = cNote ? `${cName} | ${cNote}` : cName;
 
       try {
@@ -1931,6 +1967,9 @@
         const baseUrl = window.location.origin + window.location.pathname;
         const shareUrl = `${baseUrl}?b=${encoded}&c=${encodedName}`;
         const count = SELECTED_IDS.size;
+
+        // Đóng Modal
+        document.getElementById('linkModal').classList.remove('open');
 
         // Dùng Web Share API trên điện thoại
         if (navigator.share) {
