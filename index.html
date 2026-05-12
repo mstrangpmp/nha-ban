@@ -1918,6 +1918,15 @@
         const shareUrl = `${baseUrl}?b=${encoded}&c=${encodedName}`;
         const count = SELECTED_IDS.size;
 
+        // Dùng Web Share API trên điện thoại
+        if (navigator.share) {
+          navigator.share({
+            title: `Khang Ngô Nhà Phố - ${count} căn (Khách: ${cName})`,
+            url: shareUrl
+          }).catch(() => {});
+          return;
+        }
+
         const ta = document.createElement('textarea');
         ta.value = shareUrl;
         ta.style.cssText = 'position:fixed;left:0;top:0;opacity:0;';
@@ -1936,7 +1945,7 @@
       document.body.insertAdjacentHTML('beforeend', `
         <button class="selall-btn-float" id="selAllBtn" onclick="toggleSelectAll()" title="Chọn / Bỏ chọn tất cả">☐</button>
         <button class="share-btn-float" onclick="promptGenerateLink()" style="background:#27ae60;">
-          🔗 Tạo Link Khách
+          🔗
           <span class="share-count" id="shareCount">0</span>
         </button>
       `);
