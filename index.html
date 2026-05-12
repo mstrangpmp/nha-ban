@@ -1352,6 +1352,11 @@
             DATA = fullList;
           }
 
+          // Tracking: Bắt đầu xem danh sách
+          if (DATA.length > 0) {
+            trackAction("Mở danh sách nhà", `Số lượng hiển thị: ${DATA.length} căn`);
+          }
+
           // Sắp xếp được xử lý động trong render()
 
           restoreState();
