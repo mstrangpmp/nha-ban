@@ -1137,13 +1137,19 @@
     const shareToken = urlParams.get('s');
     
     // Giai đoạn 1: Giải mã tên khách hàng
-    let customerName = "";
+    // Giai đoạn 1: Giải mã tên khách hàng
+    let displayCustomerName = "";
+    let trackingCustomerName = "";
     const customerToken = urlParams.get('c');
     if (customerToken) {
       try {
-        customerName = decodeURIComponent(escape(window.atob(customerToken)));
+        const decoded = decodeURIComponent(escape(window.atob(customerToken)));
+        const parts = decoded.split(" | ");
+        displayCustomerName = parts[0];
+        trackingCustomerName = decoded.replace(" | ", " - "); // Đổi dấu cho dễ nhìn trong Tracking
       } catch(e) {
-        customerName = "Khách Hàng";
+        displayCustomerName = "Khách Hàng";
+        trackingCustomerName = "Khách Hàng";
       }
     }
 
@@ -1152,14 +1158,14 @@
     const TRACKING_URL = 'https://script.google.com/macros/s/AKfycbxsFXAQiX11LaSAslvefiv7ncWcHVgeyyd8Gi2pgRAneHhyZpE0AZKjP4rRrHD15oNN1g/exec';
     
     function trackAction(action, details = "") {
-      if (isAdmin || !customerName) return; // Không track Admin
+      if (isAdmin || !trackingCustomerName) return; // Không track Admin
       try {
         fetch(TRACKING_URL, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            customer: customerName,
+            customer: trackingCustomerName,
             action: action,
             details: details
           })
@@ -1167,10 +1173,10 @@
       } catch (error) {}
     }
 
-    if (customerName) {
+    if (displayCustomerName) {
       const banner = document.getElementById('welcomeBanner');
       if (banner) {
-        banner.innerHTML = `👋 Xin chào <b>${customerName}</b>, đây là danh sách nhà Khang Ngô chọn riêng cho anh/chị!`;
+        banner.innerHTML = `👋 Xin chào <b>${displayCustomerName}</b>, đây là danh sách nhà Khang Ngô chọn riêng cho anh/chị!`;
         banner.style.display = 'block';
       }
     }
@@ -1903,8 +1909,11 @@
         alert('Vui lòng chọn ít nhất 1 căn nhà để tạo link!');
         return;
       }
-      const cName = prompt("Nhập tên Khách hàng (Sẽ lưu vào Tracking):");
+      const cName = prompt("Nhập TÊN KHÁCH HÀNG (Sẽ hiển thị trên Web lời chào):");
       if (!cName) return; // Hủy nếu không nhập
+
+      const cNote = prompt("Nhập GHI CHÚ (Chỉ dùng lưu Log Tracking, khách không thấy):");
+      const fullCustomerString = cNote ? `${cName} | ${cNote}` : cName;
 
       try {
         const allIds = DATA.map(p => String(p.id));
@@ -1916,8 +1925,8 @@
           encoded += B64[parseInt(bits.substr(i, 6), 2)];
         }
 
-        // Encode tên khách
-        const encodedName = window.btoa(unescape(encodeURIComponent(cName)));
+        // Encode tên khách + ghi chú
+        const encodedName = window.btoa(unescape(encodeURIComponent(fullCustomerString)));
 
         const baseUrl = window.location.origin + window.location.pathname;
         const shareUrl = `${baseUrl}?b=${encoded}&c=${encodedName}`;
