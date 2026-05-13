@@ -1366,9 +1366,9 @@
                 rong_hem: cv(r.c[12]) || '-', // M
                 tinh_trang: cv(r.c[13]) || '-', // N
                 danh_gia: cv(r.c[14]) || '', // O
-                is_invisible: (cv(r.c[14]) || '').toLowerCase().includes('ẩn') || 
-                              (cv(r.c[14]) || '').toLowerCase().includes('đã bán') ||
-                              (cv(r.c[14]) || '').toLowerCase().includes('invisible'),
+                is_invisible: (cv(r.c[13]) || '').toLowerCase().includes('ẩn') || 
+                              (cv(r.c[13]) || '').toLowerCase().includes('đã bán') ||
+                              (cv(r.c[13]) || '').toLowerCase().includes('invisible'),
                 ngu_tang_tret: cv(r.c[15]) || '-', // P — ngu_tang_tret
                 chdv: cv(r.c[16]) || '-', // Q
                 giabq: giabq > 0 ? `${giabq} tr/m²` : '-',
