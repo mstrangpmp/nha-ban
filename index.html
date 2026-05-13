@@ -1344,7 +1344,7 @@
           const rows = response.table.rows;
           const fullList = rows
             .filter(r => r.c[0] && r.c[0].v)
-            .map(r => {
+            .map((r, index) => {
               const dt = parseFloat(cv(r.c[2])) || 0;
               const gia = parseFloat(cv(r.c[5])) || 0;
               const giabq = (dt > 0 && gia > 0) ? Math.round((gia * 1000) / dt) : 0; // Giá tỷ -> quy ra triệu/m2
@@ -1366,6 +1366,9 @@
                 rong_hem: cv(r.c[12]) || '-', // M
                 tinh_trang: cv(r.c[13]) || '-', // N
                 danh_gia: cv(r.c[14]) || '', // O
+                is_invisible: (cv(r.c[14]) || '').toLowerCase().includes('ẩn') || 
+                              (cv(r.c[14]) || '').toLowerCase().includes('đã bán') ||
+                              (cv(r.c[14]) || '').toLowerCase().includes('invisible'),
                 ngu_tang_tret: cv(r.c[15]) || '-', // P — ngu_tang_tret
                 chdv: cv(r.c[16]) || '-', // Q
                 giabq: giabq > 0 ? `${giabq} tr/m²` : '-',
@@ -1392,13 +1395,18 @@
               return tk;
             }).filter(Boolean);
           }
+          
+          // Loại bỏ các căn đã bị mark invisible (trừ khi cố tình xem chính xác qua share link?)
+          // Ở đây quyết định: Nếu là list tổng (không có share token), thì ẩn đi.
+          // Nếu có share token, vẫn cho khách xem (trường hợp Khang lỡ gửi link hôm qua, hôm nay bán xong đánh dấu Ẩn, khách vào vẫn xem được nhưng có thể liên hệ Khang).
+          // Hoặc có thể ẩn luân. Tốt nhất là ẩn luôn.
           if (sharedIds) {
-            DATA = fullList.filter(p => sharedIds.map(String).includes(String(p.id)));
+            DATA = fullList.filter(p => sharedIds.map(String).includes(String(p.id)) && !p.is_invisible);
           } else if (!isAdmin) {
             DATA = []; 
             showError('Vui lòng liên hệ Khang Ngô Nhà Phố để được cung cấp thông tin.');
           } else {
-            DATA = fullList;
+            DATA = fullList.filter(p => !p.is_invisible);
           }
 
           // Tracking: Bắt đầu xem danh sách
