@@ -1217,10 +1217,11 @@
     
     // Logic chia sẻ: giải mã danh sách ID từ URL
     let sharedIds = null;
-    const shareBitmask = urlParams.get('b'); // Format mới: bitmask
+    const shareBitmask = urlParams.get('b'); // Format cũ: bitmask
     if (shareToken) {
       try {
         if (shareToken.includes(',') || !shareToken.includes('[')) {
+          // Token có thể chứa list mã tạm (VD: 1,5,12) hoặc list Mã căn cũ (VD: q3-10,pn-05)
           sharedIds = shareToken.split(',').map(s => s.trim()).filter(Boolean);
         } else {
           const decoded = atob(shareToken);
@@ -1349,6 +1350,7 @@
               const giabq = (dt > 0 && gia > 0) ? Math.round((gia * 1000) / dt) : 0; // Giá tỷ -> quy ra triệu/m2
               const cleanQ = String(cv(r.c[6])).replace(/^(Quận|Q)\.?\s*/i, '').trim();
               return {
+                temp_id: index + 1, // Mã tạm theo số tăng dần, bắt đầu từ 1
                 id: cv(r.c[0]),
                 t: cv(r.c[1]),
                 dt: cv(r.c[2]),
@@ -1377,9 +1379,18 @@
 
           // Lọc dữ liệu nếu là khách được chia sẻ link
           if (shareBitmask) {
-            // Giải mã bitmask từ URL
+            // Giải mã bitmask từ URL (Format cũ)
             const allIds = fullList.map(p => String(p.id));
             sharedIds = decodeBitmask(shareBitmask, allIds);
+          } else if (sharedIds) {
+            // Giải mã mã tạm (temp_id) hoặc mã cũ (Mã căn)
+            sharedIds = sharedIds.map(tk => {
+              if (/^\d+$/.test(tk)) {
+                const idx = parseInt(tk, 10) - 1;
+                return fullList[idx] ? String(fullList[idx].id) : null;
+              }
+              return tk;
+            }).filter(Boolean);
           }
           if (sharedIds) {
             DATA = fullList.filter(p => sharedIds.map(String).includes(String(p.id)));
@@ -1959,20 +1970,20 @@
       const fullCustomerString = cNote ? `${cName} | ${cNote}` : cName;
 
       try {
-        const allIds = DATA.map(p => String(p.id));
-        let bits = '';
-        allIds.forEach(id => bits += SELECTED_IDS.has(id) ? '1' : '0');
-        while (bits.length % 6) bits += '0';
-        let encoded = '';
-        for (let i = 0; i < bits.length; i += 6) {
-          encoded += B64[parseInt(bits.substr(i, 6), 2)];
-        }
+        // Thu thập các Mã tạm (temp_id) của những căn được chọn
+        const tempIds = [];
+        SELECTED_IDS.forEach(id => {
+          // Lưu ý: Cần tìm trong fullListGlobal hoặc DATA vì SELECTED_IDS chứa id thực sự
+          // Tuy nhiên ta không lưu fullListGlobal, nên ta dùng DATA để lấy temp_id
+          const house = DATA.find(p => p.id === id);
+          if (house) tempIds.push(house.temp_id);
+        });
 
         // Encode tên khách + ghi chú
         const encodedName = window.btoa(unescape(encodeURIComponent(fullCustomerString)));
 
         const baseUrl = window.location.origin + window.location.pathname;
-        const shareUrl = `${baseUrl}?b=${encoded}&c=${encodedName}`;
+        const shareUrl = `${baseUrl}?s=${tempIds.join(',')}&c=${encodedName}`;
         const count = SELECTED_IDS.size;
 
         // Đóng Modal
