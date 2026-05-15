@@ -1376,7 +1376,8 @@
                 imgs: [
                   cv(r.c[17]), cv(r.c[18]), cv(r.c[19]), cv(r.c[20]), cv(r.c[21]), 
                   cv(r.c[22]), cv(r.c[23]), cv(r.c[24]), cv(r.c[25]), cv(r.c[26])
-                ].filter(Boolean) // R đến AA
+                ].filter(Boolean), // R đến AA
+                system_id: cv(r.c[32]) || (index + 1).toString() // Nếu không có thì fallback về index
               };
             });
 
@@ -1386,8 +1387,12 @@
             const allIds = fullList.map(p => String(p.id));
             sharedIds = decodeBitmask(shareBitmask, allIds);
           } else if (sharedIds) {
-            // Giải mã mã tạm (temp_id) hoặc mã cũ (Mã căn)
+            // Giải mã System ID (hoặc mã tạm, mã cũ)
             sharedIds = sharedIds.map(tk => {
+              if (tk.startsWith('SYS-')) {
+                 const house = fullList.find(h => h.system_id === tk);
+                 return house ? String(house.id) : null;
+              }
               if (/^\d+$/.test(tk)) {
                 const idx = parseInt(tk, 10) - 1;
                 return fullList[idx] ? String(fullList[idx].id) : null;
@@ -1978,13 +1983,13 @@
       const fullCustomerString = cNote ? `${cName} | ${cNote}` : cName;
 
       try {
-        // Thu thập các Mã tạm (temp_id) của những căn được chọn
+        // Thu thập các System ID của những căn được chọn
         const tempIds = [];
         SELECTED_IDS.forEach(id => {
           // Lưu ý: Cần tìm trong fullListGlobal hoặc DATA vì SELECTED_IDS chứa id thực sự
-          // Tuy nhiên ta không lưu fullListGlobal, nên ta dùng DATA để lấy temp_id
+          // Tuy nhiên ta không lưu fullListGlobal, nên ta dùng DATA để lấy system_id
           const house = DATA.find(p => p.id === id);
-          if (house) tempIds.push(house.temp_id);
+          if (house) tempIds.push(house.system_id);
         });
 
         // Encode tên khách + ghi chú
