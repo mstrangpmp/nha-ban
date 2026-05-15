@@ -1359,24 +1359,24 @@
                 gia: cv(r.c[5]),
                 q: (isNaN(cleanQ) || cleanQ === '') ? cleanQ.toLowerCase() : 'q' + cleanQ,
                 ql: cleanQ.toUpperCase(),
-                phuong: cv(r.c[8]) || '-', // I (MỚI)
-                loai_hinh: cv(r.c[9]) || 'Hẻm', // J
-                huong: cv(r.c[10]) || '-', // K
-                duong_truoc_nha: cv(r.c[11]) || '-', // L — đường trước nhà
-                rong_hem: cv(r.c[12]) || '-', // M
-                tinh_trang: cv(r.c[13]) || '-', // N
-                danh_gia: cv(r.c[14]) || '', // O
-                is_invisible: (cv(r.c[13]) || '').toLowerCase().includes('ẩn') || 
-                              (cv(r.c[13]) || '').toLowerCase().includes('đã bán') ||
-                              (cv(r.c[13]) || '').toLowerCase().includes('invisible'),
-                ngu_tang_tret: cv(r.c[15]) || '-', // P — ngu_tang_tret
-                chdv: cv(r.c[16]) || '-', // Q
+                phuong: cv(r.c[7]) || '-', // H
+                loai_hinh: cv(r.c[8]) || 'Hẻm', // I
+                huong: cv(r.c[9]) || '-', // J
+                duong_truoc_nha: cv(r.c[10]) || '-', // K
+                rong_hem: cv(r.c[11]) || '-', // L
+                tinh_trang: cv(r.c[12]) || '-', // M
+                danh_gia: cv(r.c[13]) || '', // N
+                is_invisible: (cv(r.c[12]) || '').toLowerCase().includes('ẩn') || 
+                              (cv(r.c[12]) || '').toLowerCase().includes('đã bán') ||
+                              (cv(r.c[12]) || '').toLowerCase().includes('invisible'),
+                ngu_tang_tret: cv(r.c[14]) || '-', // O
+                chdv: cv(r.c[15]) || '-', // P
                 giabq: giabq > 0 ? `${giabq} tr/m²` : '-',
-                m: cv(r.c[17]), // R
+                m: cv(r.c[16]), // Q
                 imgs: [
-                  cv(r.c[18]), cv(r.c[19]), cv(r.c[20]), cv(r.c[21]), cv(r.c[22]), 
-                  cv(r.c[23]), cv(r.c[24]), cv(r.c[25]), cv(r.c[26]), cv(r.c[27])
-                ].filter(Boolean) // S đến AB
+                  cv(r.c[17]), cv(r.c[18]), cv(r.c[19]), cv(r.c[20]), cv(r.c[21]), 
+                  cv(r.c[22]), cv(r.c[23]), cv(r.c[24]), cv(r.c[25]), cv(r.c[26])
+                ].filter(Boolean) // R đến AA
               };
             });
 
